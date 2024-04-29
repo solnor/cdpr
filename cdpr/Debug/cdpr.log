@@ -1,0 +1,7 @@
+﻿  algorithms.cpp
+c:\users\sølve\source\repos\cdpr\cdpr\algorithms.h(52): warning C4091: 'typedef ': ignored on left of 'force_alloc_res' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\algorithms.cpp(630): warning C4244: '-=': conversion from 'double' to 'int', possible loss of data
+  cdpr.cpp
+c:\users\sølve\source\repos\cdpr\cdpr\algorithms.h(52): warning C4091: 'typedef ': ignored on left of 'force_alloc_res' when no variable is declared
+  Generating Code...
+  cdpr.vcxproj -> C:\Users\Sølve\source\repos\cdpr\Debug\cdpr.exe
