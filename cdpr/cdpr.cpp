@@ -139,7 +139,7 @@ int control_loop() {
 	std::cout << "Running" << std::endl;
 	while (running) {
 		std::cout << "Start loop" << std::endl;
-		auto start = std::chrono::high_resolution_clock::now();
+		//auto start = std::chrono::high_resolution_clock::now();
 		get_all_motor_states(handles, motor_states);
 		pos << ms0.pos,
 			   ms1.pos,	
@@ -179,9 +179,9 @@ int control_loop() {
 		//	Sleep(1);
 		//}
 		std::cout << fres.f << std::endl;
-		auto stop = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
+		//auto stop = std::chrono::high_resolution_clock::now();
+		//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		//std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		poll_keys();
 	}
 	return 1;
