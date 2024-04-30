@@ -136,7 +136,9 @@ int control_loop() {
 		set_encoder_position(handles[0], 0.0);
 	}
 	std::cin >> input;
+	std::cout << "Running" << std::endl;
 	while (running) {
+		std::cout << "Start loop" << std::endl;
 		auto start = std::chrono::high_resolution_clock::now();
 		get_all_motor_states(handles, motor_states);
 		pos << ms0.pos,
