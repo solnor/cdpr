@@ -106,7 +106,7 @@ int control_loop() {
 
 	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
 	Kp(0, 0) = 200; // Proportional gain x
-	Kp(1, 1) = 200; // Proportional gain y
+	Kp(1, 1) = 150; // Proportional gain y
 	Kp(2, 2) = 5;   // Proportional gain theta
 
 	Eigen::Matrix3d Ki = Eigen::Matrix3d::Zero();
@@ -129,9 +129,9 @@ int control_loop() {
 		set_motor_torque(handles[i], test(i));
 		
 	}
+	std::cout << "Set home position?" << std::endl;
 	std::string input;
 	std::cin >> input;
-	std::cout << "Set home position?" << std::endl;
 	if (is_number(input)) {
 		std::cout << "Setting home position" << std::endl;
 		for (uint8_t i = 0; i < 4; i++) {
@@ -147,7 +147,7 @@ int control_loop() {
 	std::cout << "Running" << std::endl;
 	while (running) {
 		//std::cout << "Start loop" << std::endl;
-		//auto start = std::chrono::high_resolution_clock::now();
+		auto start = std::chrono::high_resolution_clock::now();
 		//std::cout << "Getting motor states" << std::endl;
 		get_all_motor_states(handles, motor_states);
 		pos << ms0.pos,
@@ -167,7 +167,7 @@ int control_loop() {
 		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 		
-		qd << 0.2, 0, 0;
+		qd << 0.1, 0, 0;
 		e  << qd - q;
 		std::cout << "q: \n" << q << std::endl;
 		std::cout << "e: \n" << e << std::endl;
@@ -181,21 +181,21 @@ int control_loop() {
 
 		// TODO: Add f0
 
-		//T = (fres.f + f0).cwiseProduct(r_d*motor_signs);
-
+		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
+		std::cout << "T: \n" << T << std::endl;
 		// TODO: Write torques to motor drivers
 		//std::cout << "Done" << std::endl;
-		//for (uint8_t i = 0; i < 4; i++) {
-		//	test(i) = 0.3*(-1)*motor_signs(i);
-		//	//std::cout << test << "\n" << std::endl;
-		//	//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
-		//	set_motor_torque(handles[i], test(i));
-		//	Sleep(1);
-		//}
+		for (uint8_t i = 0; i < 4; i++) {
+			//test(i) = T*(-1)*motor_signs(i);
+			//std::cout << test << "\n" << std::endl;
+			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+			//set_motor_torque(handles[i], T(i));
+			//Sleep(1);
+		}
 		std::cout << "f: \n" << fres.f << std::endl;
-		//auto stop = std::chrono::high_resolution_clock::now();
-		//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-		//std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		poll_keys();
 	}
 	return 1;
