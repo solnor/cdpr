@@ -33,7 +33,7 @@ typedef enum ODriveStreamProtocolType {
 
 // ODrive.Axis.AxisState
 typedef enum axis_states {
-	AXIS_STATE_UNDEFINED = 0,
+	AXIS_STATE_UNDEFINED = 1,
 	AXIS_STATE_IDLE,
 	AXIS_STATE_STARTUP_SEQUENCE,
 	AXIS_STATE_FULL_CALIBRATION_SEQUENCE,
