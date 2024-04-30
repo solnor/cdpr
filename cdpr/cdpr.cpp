@@ -124,7 +124,7 @@ int control_loop() {
 	com_init(handles, odrv_ports);
 	for (uint8_t i = 0; i < 4; i++) {
 		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
-		test(i) = 0.4*(-1)*motor_signs(i);
+		test(i) = 0.3*(-1)*motor_signs(i);
 		set_motor_torque(handles[i], test(i));
 		Sleep(1);
 	}
@@ -137,7 +137,7 @@ int control_loop() {
 	while (running) {
 
 		for (uint8_t i = 0; i < 4; i++) {
-			test(i) = 0.4*(-1)*motor_signs(i);
+			test(i) = 0.3*(-1)*motor_signs(i);
 			//std::cout << test << "\n" << std::endl;
 			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 			set_motor_torque(handles[i], test(i));
