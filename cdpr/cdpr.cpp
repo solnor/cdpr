@@ -129,7 +129,7 @@ int control_loop() {
 
 		for (uint8_t i = 0; i < 4; i++) {
 			test(i) = 0.3*motor_signs(i);
-			set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 			set_motor_torque(handles[i], test(i));
 		}
 		//auto start = std::chrono::high_resolution_clock::now();
