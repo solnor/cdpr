@@ -128,7 +128,8 @@ int control_loop() {
 	while (running) {
 
 		for (uint8_t i = 0; i < 4; i++) {
-			test(i) = 0.3*motor_signs(i);
+			test(i) = 0.3*(-1)*motor_signs(i);
+			//std::cout << test << "\n" << std::endl;
 			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 			set_motor_torque(handles[i], test(i));
 		}
