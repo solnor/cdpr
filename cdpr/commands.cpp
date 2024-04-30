@@ -84,7 +84,7 @@ int set_motor_torque(HANDLE handle, double torque) {
 	char c[100];
 	std::string cstr = "c 0 " + to_string(torque, prec) + "\n";
 	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
-	//std::cout << c << std::endl;
+	std::cout << handle << ": " << c << std::endl;
 	com_write_ln(handle, c);
 	return 1;
 }
