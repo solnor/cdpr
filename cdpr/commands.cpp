@@ -50,6 +50,8 @@ int set_encoder_position(HANDLE handle, double position) {
 }
 
 int get_motor_state(HANDLE handle, motor_state* state) {
+	std::cout << handle << ", pos: " << state->pos << std::endl;
+	std::cout << handle << ", vel: " << state->vel << std::endl;
 	char c[] = "f 0\n";
 	char r[25];
 	com_write_ln(handle, c);
