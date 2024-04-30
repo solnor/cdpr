@@ -169,20 +169,20 @@ int control_loop() {
 		
 		qd << 0.1, 0, 0;
 		e  << qd - q;
-		std::cout << "q: \n" << q << std::endl;
-		std::cout << "e: \n" << e << std::endl;
+		//std::cout << "q: \n" << q << std::endl;
+		//std::cout << "e: \n" << e << std::endl;
 		wd << Kp * e + Ki * eint;
 		//std::cout << "Calculating structure matrix" << std::endl;
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		//std::cout << "l: \n" << l << std::endl;
-		std::cout << "wd: \n" << wd << std::endl;
+		//std::cout << "wd: \n" << wd << std::endl;
 		//std::cout << "AT: \n" << AT << std::endl;
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
 		// TODO: Add f0
 
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
-		std::cout << "T: \n" << T << std::endl;
+		//std::cout << "T: \n" << T << std::endl;
 		// TODO: Write torques to motor drivers
 		//std::cout << "Done" << std::endl;
 		for (uint8_t i = 0; i < 4; i++) {
@@ -192,7 +192,7 @@ int control_loop() {
 			set_motor_torque(handles[i], T(i));
 			Sleep(1);
 		}
-		std::cout << "f: \n" << fres.f << std::endl;
+		//std::cout << "f: \n" << fres.f << std::endl;
 		auto stop = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
