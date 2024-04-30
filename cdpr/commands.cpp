@@ -34,7 +34,7 @@ int set_axis_state(HANDLE handle, axis_states ax_state) {
 	uint8_t prec = 1;
 	std::string cstr = "w axis0.requested_state " + to_string(ax_state, prec) + "\n";
 	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
-	std::cout << c << std::endl;
+	//std::cout << c << std::endl;
 	com_write_ln(handle, c);
 	return 1;
 }
@@ -44,7 +44,7 @@ int set_encoder_position(HANDLE handle, double position) {
 	uint8_t prec = 5;
 	std::string cstr = "w axis0.pos_estimate " + to_string(position, prec) + "\n";
 	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
-	std::cout << c << std::endl;
+	//std::cout << c << std::endl;
 	com_write_ln(handle, c);
 	return 1;
 }
@@ -88,7 +88,7 @@ int set_motor_torque(HANDLE handle, double torque) {
 	char c[100];
 	std::string cstr = "c 0 " + to_string(torque, prec) + "\n";
 	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
-	std::cout << handle << ": " << c << std::endl;
+	//std::cout << handle << ": " << c << std::endl;
 	com_write_ln(handle, c);
 	return 1;
 }

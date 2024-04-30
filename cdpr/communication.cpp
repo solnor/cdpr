@@ -45,10 +45,10 @@ int com_read_ln(HANDLE handle, char* c) {
 	LPDWORD n = 0;
 	int i = 0;
 	while (1) {
-		int r = ReadFile(handle, &c[i], 1, n, NULL);
-		if (!r) {
+		ReadFile(handle, &c[i], 1, n, NULL);
+		/*if (!r) {
 			std::cout << "Failed to read line.\n" << std::endl;
-		}
+		}*/
 		if (c[i] == 0x0a) {
 			break;
 		}
@@ -59,10 +59,10 @@ int com_read_ln(HANDLE handle, char* c) {
 
 int com_write_ln(HANDLE handle, char c[]) {
 	LPDWORD n = 0;
-	int r = WriteFile(handle, c, strlen(c), n, NULL);
-	if (!r) {
+	WriteFile(handle, c, strlen(c), n, NULL);
+	/*if (!r) {
 		std::cout << "Failed to write line.\n" << std::endl;
-	}
+	}*/
 	//FlushFileBuffers(handle);
 	return (int)n;
 }
