@@ -166,8 +166,9 @@ int control_loop() {
 		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 		
-		qd << 1, 0, 0;
+		qd << 0.1, 0, 0;
 		e  << qd - q;
+		std::cout << "e: \n" << std::endl;
 		wd << Kp * e + Ki * eint;
 		//std::cout << "Calculating structure matrix" << std::endl;
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
