@@ -135,51 +135,51 @@ int control_loop() {
 		std::cout << "Setting home position" << std::endl;
 		set_encoder_position(handles[0], 0.0);
 	}
+	std::cin >> input;
 	while (running) {
+		auto start = std::chrono::high_resolution_clock::now();
+		get_all_motor_states(handles, motor_states);
+		pos << ms0.pos,
+			   ms1.pos,	
+			   ms2.pos,
+			   ms3.pos;
+		l << l0 + pos.cwiseProduct(r_p*motor_signs);
+		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
+			   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
+			   l(2) - sqrt( sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // total cable length
+			   l(3) - sqrt( sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
 
-		for (uint8_t i = 0; i < 4; i++) {
-			test(i) = 0.3*(-1)*motor_signs(i);
-			//std::cout << test << "\n" << std::endl;
-			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
-			set_motor_torque(handles[i], test(i));
-			Sleep(10);
-		}
+		q = forward_kinematics(a, b, 
+							   fk_init_estimate(a, b, l), 
+							   l, r_p);
 
-		//auto start = std::chrono::high_resolution_clock::now();
-		//get_all_motor_states(handles, motor_states);
-		//pos << ms0.pos,
-		//	   ms1.pos,	
-		//	   ms2.pos,
-		//	   ms3.pos;
-		//l << l0 + pos.cwiseProduct(r_p*motor_signs);
-		//lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
-		//	   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
-		//	   l(2) - sqrt( sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // total cable length
-		//	   l(3) - sqrt( sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
+		invkin = inverse_kinematics(a, b, q, r_p);
+		
+		qd << 1, 0, 0;
+		e  << qd - q;
+		wd << Kp * e + Ki * eint;
 
-		//q = forward_kinematics(a, b, 
-		//					   fk_init_estimate(a, b, l), 
-		//					   l, r_p);
+		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
+		
+		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
-		//invkin = inverse_kinematics(a, b, q, r_p);
-		//
-		//qd << 1, 0, 0;
-		//e  << qd - q;
-		//wd << Kp * e + Ki * eint;
+		// TODO: Add f0
 
-		//AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		//
-		//fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
+		//T = (fres.f + f0).cwiseProduct(r_d*motor_signs);
 
-		//// TODO: Add f0
-
-		////T = (fres.f + f0).cwiseProduct(r_d*motor_signs);
-
-		//// TODO: Write torques to motor drivers
+		// TODO: Write torques to motor drivers
 		//std::cout << "Done" << std::endl;
-		//auto stop = std::chrono::high_resolution_clock::now();
-		//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-		//std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
+		//for (uint8_t i = 0; i < 4; i++) {
+		//	test(i) = 0.3*(-1)*motor_signs(i);
+		//	//std::cout << test << "\n" << std::endl;
+		//	//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+		//	set_motor_torque(handles[i], test(i));
+		//	Sleep(1);
+		//}
+		std::cout << fres.f << std::endl;
+		auto stop = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		poll_keys();
 	}
 	return 1;
