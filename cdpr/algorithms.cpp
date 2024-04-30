@@ -653,6 +653,7 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 		// 4) Update main iterations
 		iter++;
 		if (iter > itermax) {
+			std::cout << "FA: Max iterations reached. Setting forces equal to previous ones." << std::endl;
 			res.f = f_prev;
 			res.w = Eigen::Vector3d(0, 0, 0);
 			res.flag = 1;
@@ -666,6 +667,7 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 		if (res.f(i) < 0) {
 			res.f = f_prev;
 			res.flag = 1;
+			std::cout << "FA: Forces below zero. Setting forces equal to previous ones." << std::endl;
 			break;
 		}
 	}

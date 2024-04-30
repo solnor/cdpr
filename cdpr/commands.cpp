@@ -50,24 +50,23 @@ int set_encoder_position(HANDLE handle, double position) {
 }
 
 int get_motor_state(HANDLE handle, motor_state* state) {
-	std::cout << handle << ", pos: " << state->pos << std::endl;
-	std::cout << handle << ", vel: " << state->vel << std::endl;
+	//std::cout << handle << ", pos: " << state->pos << std::endl;
+	//std::cout << handle << ", vel: " << state->vel << std::endl;
 	char c[] = "f 0\n";
 	char r[25];
 	com_write_ln(handle, c);
-	std::cout << "Writeline completed" << std::endl;
 	com_read_ln(handle, r);
-	std::cout << "Readline completed" << std::endl;
+
 	std::string rstr = r;
-	std::cout << "Read response: " << rstr << std::endl;
+
 	//std::string r = "1.234567 8.91234";
 	int index_delim = rstr.find(" ");
 
 	state->pos = std::stof(rstr.substr(0, index_delim));
 	state->vel = std::stof(rstr.substr(index_delim + 1, rstr.length() - index_delim - 1));
 
-	std::cout << handle << ", pos: " << state->pos << std::endl;
-	std::cout << handle << ", vel: " << state->vel << std::endl;
+	//std::cout << handle << ", pos: " << state->pos << std::endl;
+	//std::cout << handle << ", vel: " << state->vel << std::endl;
 
 	return 1;
 }

@@ -135,37 +135,38 @@ int control_loop() {
 		std::cout << "Setting home position" << std::endl;
 		set_encoder_position(handles[0], 0.0);
 	}
+	std::cout << "Motor positions: " << ms0.pos << ", " << ms1.pos << ", " << ms2.pos << ", " << ms3.pos << std::endl;
 	std::cout << "Start control loop?" << std::endl;
 	std::cin >> input;
 	std::cout << "Running" << std::endl;
 	while (running) {
-		std::cout << "Start loop" << std::endl;
+		//std::cout << "Start loop" << std::endl;
 		//auto start = std::chrono::high_resolution_clock::now();
-		std::cout << "Getting motor states" << std::endl;
+		//std::cout << "Getting motor states" << std::endl;
 		get_all_motor_states(handles, motor_states);
 		pos << ms0.pos,
 			   ms1.pos,	
 			   ms2.pos,
 			   ms3.pos;
-		std::cout << "Calculating l" << std::endl;
+		//std::cout << "Calculating l" << std::endl;
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
 		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
 			   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
 			   l(2) - sqrt( sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // total cable length
 			   l(3) - sqrt( sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
-		std::cout << "Calculating forward kinematics" << std::endl;
+		//std::cout << "Calculating forward kinematics" << std::endl;
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, l), 
 							   l, r_p);
-		std::cout << "Calculating inverse kinematics" << std::endl;
+		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 		
 		qd << 1, 0, 0;
 		e  << qd - q;
 		wd << Kp * e + Ki * eint;
-		std::cout << "Calculating structure matrix" << std::endl;
+		//std::cout << "Calculating structure matrix" << std::endl;
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		std::cout << "Calculating forces" << std::endl;
+		//std::cout << "Calculating forces" << std::endl;
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
 		// TODO: Add f0
