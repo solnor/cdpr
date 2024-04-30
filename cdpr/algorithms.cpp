@@ -171,7 +171,6 @@ Eigen::MatrixXd fk_jacobian(const Eigen::Ref<const Eigen::MatrixXd>& a_i,
 	J4y     = (sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))+r_p*(3.141592653589793-acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*(-a4y+y+b4y*c+b4x*s))+acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0)))-1.7896E-1))*(l4*l4-pow(r_p*-2.237E+3-r_p*acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*(-a4y+y+b4y*c+b4x*s))*1.25E+4+r_p*3.141592653589793*1.25E+4+sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))*1.25E+4+r_p*acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0)))*1.25E+4,2.0)/1.5625E+8)*(r_p*(1.0/pow(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0),3.0/2.0)*1.0/sqrt(-pow(-a4y+y+b4y*c+b4x*s,2.0)/(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))+1.0)*pow(-a4x+r_p+x+b4x*c-b4y*s,2.0)-(r_p*r_p)*1.0/sqrt(-(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))/(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))+1.0)*1.0/pow(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0),3.0/2.0)*1.0/sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))*(-a4y+y+b4y*c+b4x*s))+(1.0/sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))*(a4y*-2.0+y*2.0+b4y*c*2.0+b4x*s*2.0))/2.0)*-4.0;
 	J4theta = (sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))+r_p*(3.141592653589793-acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*(-a4y+y+b4y*c+b4x*s))+acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0)))-1.7896E-1))*(l4*l4-pow(r_p*-2.237E+3-r_p*acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*(-a4y+y+b4y*c+b4x*s))*1.25E+4+r_p*3.141592653589793*1.25E+4+sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))*1.25E+4+r_p*acos(1.0/sqrt(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))*sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0)))*1.25E+4,2.0)/1.5625E+8)*((1.0/sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))*(a4x*b4x*s*-2.0-a4y*b4y*s*2.0+b4y*r_p*c*2.0+b4y*x*c*2.0-b4x*y*c*2.0+b4x*r_p*s*2.0+b4x*x*s*2.0+b4y*y*s*2.0-a4x*b4y*c*2.0+a4y*b4x*c*2.0))/2.0-r_p*(1.0/pow(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0),3.0/2.0)*1.0/sqrt(-pow(-a4y+y+b4y*c+b4x*s,2.0)/(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))+1.0)*(-a4x+r_p+x+b4x*c-b4y*s)*(b4x*b4x+b4y*b4y+a4x*b4y*s-a4y*b4x*s+b4x*r_p*c+b4x*x*c+b4y*y*c-b4y*r_p*s-b4y*x*s+b4x*y*s-a4x*b4x*c-a4y*b4y*c)+(r_p*r_p)*1.0/sqrt(-(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))/(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0))+1.0)*1.0/pow(pow(-a4y+y+b4y*c+b4x*s,2.0)+pow(-a4x+r_p+x+b4x*c-b4y*s,2.0),3.0/2.0)*1.0/sqrt(-r_p*(a4x*2.0-x*2.0-b4x*c*2.0+b4y*s*2.0)+pow(a4x-x-b4x*c+b4y*s,2.0)+pow(-a4y+y+b4y*c+b4x*s,2.0))*(-a4x*b4x*s-a4y*b4y*s+b4y*r_p*c+b4y*x*c-b4x*y*c+b4x*r_p*s+b4x*x*s+b4y*y*s-a4x*b4y*c+a4y*b4x*c)))*4.0;
 	
-	std::cout << J1x << std::endl;
 	Eigen::MatrixXd J(4, 3);
 	J << J1x, J1y, J1theta,
 	     J2x, J2y, J2theta,
@@ -252,9 +251,9 @@ Eigen::Vector3d forward_kinematics(const Eigen::Ref<const Eigen::MatrixXd>& a_i,
 	Eigen::Vector3d qi = q0;
 	Eigen::MatrixXd J = fk_jacobian(a_i, b_b, qi, ln, r_p);
 	Eigen::MatrixXd A = J.transpose()*J;
-	std::cout << A << std::endl;
+	//std::cout << A << std::endl;
 	Eigen::Vector4d phi = fk_nusq(a_i, b_b, qi, ln, r_p);
-	std::cout << phi << std::endl;
+	//std::cout << phi << std::endl;
 
 	Eigen::Vector3d g = J.transpose()*phi;
 
@@ -264,7 +263,7 @@ Eigen::Vector3d forward_kinematics(const Eigen::Ref<const Eigen::MatrixXd>& a_i,
 	double epsilon2 = 1 * pow(10, -17);
 	double xi = 2;
 	double mu = tau * A.diagonal().maxCoeff();
-	std::cout << mu << std::endl;
+	//std::cout << mu << std::endl;
 
 	int iter = 0;
 	int maxiter = 2;

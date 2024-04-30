@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <vector>
+//#include <vector>
 
 
 int find_driver_errors(HANDLE handles, odrive_state *state) {
@@ -20,9 +20,7 @@ int find_driver_errors(HANDLE handles, odrive_state *state) {
 
 
 
-int set_axis_state(HANDLE handle, axis_states ax_state) {
-	return 1;
-}
+
 
 std::string to_string(double x, uint8_t prec)
 {
@@ -31,9 +29,31 @@ std::string to_string(double x, uint8_t prec)
 	return ss.str();
 }
 
+int set_axis_state(HANDLE handle, axis_states ax_state) {
+	char c[100];
+	uint8_t prec = 1;
+	std::string cstr = "w axis0.requested_state " + to_string(ax_state, prec) + "\n";
+	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
+	std::cout << c << std::endl;
+	com_write_ln(handle, c);
+	return 1;
+}
+
 int get_motor_state(HANDLE handle, motor_state* state) {
-	state->pos  = 0.0;
-	state->vel = 0.0;
+	char c[] = "f 0\n";
+	char r[25];
+	com_write_ln(handle, c);
+	com_read_ln(handle, r);
+	std::string rstr = r;
+	//std::string r = "1.234567 8.91234";
+	int index_delim = rstr.find(" ");
+
+	state->pos = std::stof(rstr.substr(0, index_delim));
+	state->vel = std::stof(rstr.substr(index_delim + 1, rstr.length() - index_delim - 1));
+	
+	//std::cout << handle << ", pos: " << state->pos << std::endl;
+	//std::cout << handle << ", vel: " << state->vel << std::endl;
+
 	return 1;
 }
 
@@ -49,15 +69,12 @@ int get_all_motor_states(HANDLE handles[], std::vector<motor_state*> motor_state
 }
 
 int set_motor_torque(HANDLE handle, double torque) {
-	std::cout << std::to_string(1) << std::endl;
-	//char t[] = "c";
-	char tor[4];
-	//std::strncpy(tor, std::to_string(torque).c_str(),4);
+	//std::cout << std::to_string(1) << std::endl;
 	constexpr uint8_t prec = 5;
-	char c[prec];
-	std::string cstr = "c 0 " + to_string(torque, prec);
-	strncpy_s(c, sizeof(cstr), to_string(torque, prec).c_str(), sizeof(cstr));
-
-	//char c[] = std::strcat((char*)"c", *);
+	char c[100];
+	std::string cstr = "c 0 " + to_string(torque, prec) + "\n";
+	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
+	//std::cout << c << std::endl;
+	com_write_ln(handle, c);
 	return 1;
 }

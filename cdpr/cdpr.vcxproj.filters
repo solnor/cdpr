@@ -41,10 +41,10 @@
     <ClCompile Include="algorithms.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="communication.cpp">
+    <ClCompile Include="commands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="commands.cpp">
+    <ClCompile Include="communication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

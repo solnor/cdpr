@@ -1,24 +1,25 @@
 #include <iostream>
+#include "communication.h"
+
 #include <stdlib.h>
-#include <string>
 #include <Windows.h>
+#include <string>
 #include <fileapi.h>
 #include <cassert>
 #include <cstdlib>
 
-#include "communication.h"
 
-int com_init() {
+int com_init(HANDLE handles[n_odrv], LPCSTR odrv_ports[n_odrv]) {
 
 	DCB serialParams;
 	COMMTIMEOUTS serialTimeouts;
 
 	for (uint8_t i = 0; i < n_odrv; i++) {
 
-		handles[i] = CreateFileA(odrv_ports[i], 
-							 	 GENERIC_READ | GENERIC_WRITE, 
-								 0, NULL, OPEN_EXISTING, 
-								 FILE_ATTRIBUTE_NORMAL, NULL);
+		handles[i] = CreateFileA(odrv_ports[i],
+			GENERIC_READ | GENERIC_WRITE,
+			0, NULL, OPEN_EXISTING,
+			FILE_ATTRIBUTE_NORMAL, NULL);
 		assert(handles[i] != INVALID_HANDLE_VALUE, "Unable to open serial line");
 
 		GetCommState(handles[i], &serialParams);
@@ -31,30 +32,38 @@ int com_init() {
 		GetCommTimeouts(handles[i], &serialTimeouts);
 		serialTimeouts.ReadIntervalTimeout = MAXDWORD;
 		serialTimeouts.ReadTotalTimeoutMultiplier = MAXDWORD;
-		serialTimeouts.ReadTotalTimeoutConstant = 5; // 5 ms to respond after trying to read from the device
+		serialTimeouts.ReadTotalTimeoutConstant = 20; // 5 ms to respond after trying to read from the device
 		serialTimeouts.WriteTotalTimeoutMultiplier = 0;
 		serialTimeouts.WriteTotalTimeoutConstant = 0;
 		SetCommTimeouts(handles[i], &serialTimeouts);
-
+		std::cout << handles[i] << std::endl;
 	}
 	return 1;
 }
 
-int com_read_ln(HANDLE handle, char *c, int n_bytes_to_read) {
+int com_read_ln(HANDLE handle, char* c) {
 	LPDWORD n = 0;
-	int r = ReadFile(handle, c, n_bytes_to_read, n, NULL);
-	if (!r) {
-		std::cout << "Failed to read line.\n" << std::endl;
+	int i = 0;
+	while (1) {
+		int r = ReadFile(handle, &c[i], 1, n, NULL);
+		if (!r) {
+			std::cout << "Failed to read line.\n" << std::endl;
+		}
+		if (*c == 0x0a) {
+			break;
+		}
+		i++;
 	}
 	return (int)n;
 }
 
-int com_write_ln(HANDLE handle,char c[]) {
+int com_write_ln(HANDLE handle, char c[]) {
 	LPDWORD n = 0;
-	int r = WriteFile(handle, &c, strlen(c), n, NULL);
+	int r = WriteFile(handle, c, strlen(c), n, NULL);
 	if (!r) {
 		std::cout << "Failed to write line.\n" << std::endl;
 	}
+	//FlushFileBuffers(handle);
 	return (int)n;
 }
 
