@@ -162,12 +162,13 @@ int control_loop() {
 		//std::cout << "Calculating forward kinematics" << std::endl;
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, l), 
-							   l, r_p);
+							   lfk, r_p);
 		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 		
 		qd << 0.1, 0, 0;
 		e  << qd - q;
+		std::cout << "q: \n" << q << std::endl;
 		std::cout << "e: \n" << e << std::endl;
 		wd << Kp * e + Ki * eint;
 		//std::cout << "Calculating structure matrix" << std::endl;
