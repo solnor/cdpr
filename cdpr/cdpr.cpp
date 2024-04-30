@@ -145,6 +145,7 @@ int control_loop() {
 	std::cout << "Start control loop?" << std::endl;
 	std::cin >> input;
 	std::cout << "Running" << std::endl;
+	auto start_loop = std::chrono::high_resolution_clock::now();
 	while (running) {
 		//std::cout << "Start loop" << std::endl;
 		auto start = std::chrono::high_resolution_clock::now();
@@ -175,7 +176,9 @@ int control_loop() {
 		auto t_ik = std::chrono::high_resolution_clock::now();
 		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_ik - t_fk);
 		std::cout << "inverse_kinematics duration: " << duration.count() << " [ms]" << std::endl;
-		qd << 0.1, 0, 0;
+		auto t_loop = std::chrono::high_resolution_clock::now();
+		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
+		qd << 0.1*cos(std::chrono::duration<double>(t_since_start).count()), 0, 0;
 		e  << qd - q;
 		//std::cout << "q: \n" << q << std::endl;
 		//std::cout << "e: \n" << e << std::endl;
