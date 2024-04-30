@@ -150,6 +150,9 @@ int control_loop() {
 		auto start = std::chrono::high_resolution_clock::now();
 		//std::cout << "Getting motor states" << std::endl;
 		get_all_motor_states(handles, motor_states);
+		auto t_motor_states = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_motor_states - start);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		pos << ms0.pos,
 			   ms1.pos,	
 			   ms2.pos,
@@ -164,9 +167,14 @@ int control_loop() {
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, l), 
 							   lfk, r_p);
+		auto t_fk = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_fk - t_motor_states);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
-		
+		auto t_ik = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_ik - t_fk);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		qd << 0.1, 0, 0;
 		e  << qd - q;
 		//std::cout << "q: \n" << q << std::endl;
@@ -174,11 +182,16 @@ int control_loop() {
 		wd << Kp * e + Ki * eint;
 		//std::cout << "Calculating structure matrix" << std::endl;
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
+		auto t_sm = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_sm - t_ik);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		//std::cout << "l: \n" << l << std::endl;
 		//std::cout << "wd: \n" << wd << std::endl;
 		//std::cout << "AT: \n" << AT << std::endl;
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
-
+		auto t_fa = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_fa - t_sm);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		// TODO: Add f0
 
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
@@ -192,9 +205,12 @@ int control_loop() {
 			set_motor_torque(handles[i], T(i));
 			Sleep(1);
 		}
+		auto t_st = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_st - t_fa);
+		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		//std::cout << "f: \n" << fres.f << std::endl;
 		auto stop = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+		duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 		std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 		poll_keys();
 	}
