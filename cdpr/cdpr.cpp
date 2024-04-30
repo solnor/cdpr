@@ -203,7 +203,7 @@ int control_loop() {
 			//std::cout << test << "\n" << std::endl;
 			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 			set_motor_torque(handles[i], T(i));
-			Sleep(1);
+			//Sleep(1);
 		}
 		auto t_st = std::chrono::high_resolution_clock::now();
 		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_st - t_fa);
