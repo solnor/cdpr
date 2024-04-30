@@ -171,7 +171,9 @@ int control_loop() {
 		wd << Kp * e + Ki * eint;
 		//std::cout << "Calculating structure matrix" << std::endl;
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		//std::cout << "Calculating forces" << std::endl;
+		std::cout << "l: \n" << l << std::endl;
+		std::cout << "wd: \n" << wd << std::endl;
+		std::cout << "AT: \n" << AT << std::endl;
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
 		// TODO: Add f0
