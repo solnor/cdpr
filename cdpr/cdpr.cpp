@@ -124,9 +124,10 @@ int control_loop() {
 	com_init(handles, odrv_ports);
 	for (uint8_t i = 0; i < 4; i++) {
 		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+		Sleep(10);
 		test(i) = 0.3*(-1)*motor_signs(i);
 		set_motor_torque(handles[i], test(i));
-		Sleep(10);
+		
 	}
 	std::string input;
 	std::cin >> input;
