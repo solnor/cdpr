@@ -663,8 +663,8 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 
 	res.f = z(Eigen::seq(0, 3));
 	//if ((res.f).array() <= 0.0).Eigen::any();
-	std::cout << "FA: z: \n" << z << std::endl;
-	std::cout << "FA: res.f: \n" << res.f << std::endl;
+	//std::cout << "FA: z: \n" << z << std::endl;
+	//std::cout << "FA: res.f: \n" << res.f << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
 		if (res.f(i) < 0) {
 			res.f = f_prev;
