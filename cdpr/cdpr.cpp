@@ -141,6 +141,7 @@ int control_loop() {
 			//std::cout << test << "\n" << std::endl;
 			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 			set_motor_torque(handles[i], test(i));
+			Sleep(1);
 		}
 
 		//auto start = std::chrono::high_resolution_clock::now();
