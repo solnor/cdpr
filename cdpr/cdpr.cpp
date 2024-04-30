@@ -105,7 +105,7 @@ int control_loop() {
 	Eigen::Vector4d T = Eigen::Vector4d::Zero();
 
 	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
-	Kp(0, 0) = 200; // Proportional gain x
+	Kp(0, 0) = 250; // Proportional gain x
 	Kp(1, 1) = 150; // Proportional gain y
 	Kp(2, 2) = 5;   // Proportional gain theta
 
@@ -178,7 +178,7 @@ int control_loop() {
 		std::cout << "inverse_kinematics duration: " << duration.count() << " [ms]" << std::endl;
 		auto t_loop = std::chrono::high_resolution_clock::now();
 		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
-		qd << 0.1*cos(std::chrono::duration<double>(t_since_start).count()), 0, 0;
+		qd << 0.1*cos(6*std::chrono::duration<double>(t_since_start).count()), 0, 0;
 		e  << qd - q;
 		//std::cout << "q: \n" << q << std::endl;
 		//std::cout << "e: \n" << e << std::endl;
