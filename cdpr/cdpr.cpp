@@ -121,6 +121,7 @@ int control_loop() {
 	double xdiff = 56.40783 * convmm2m;
 
 	Eigen::Vector4d test = Eigen::Vector4d::Zero();
+	com_init(handles, odrv_ports);
 	while (running) {
 
 		for (uint8_t i = 0; i < 4; i++) {
