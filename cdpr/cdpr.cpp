@@ -124,6 +124,14 @@ int control_loop() {
 	com_init(handles, odrv_ports);
 	for (uint8_t i = 0; i < 4; i++) {
 		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+		test(i) = 0.4*(-1)*motor_signs(i);
+		set_motor_torque(handles[i], test(i));
+	}
+	std::string input;
+	std::cin >> input;
+	if (is_number(input)) {
+		std::cout << "Setting home position" << std::endl;
+		set_encoder_position(handles[0], 0.0);
 	}
 	while (running) {
 
@@ -133,6 +141,7 @@ int control_loop() {
 			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 			set_motor_torque(handles[i], test(i));
 		}
+
 		//auto start = std::chrono::high_resolution_clock::now();
 		//get_all_motor_states(handles, motor_states);
 		//pos << ms0.pos,

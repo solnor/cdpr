@@ -13,4 +13,19 @@ c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(150): warning C4091:
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(157): warning C4091: 'typedef ': ignored on left of 'odrive_motor_type' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\commands.h(10): warning C4091: 'typedef ': ignored on left of 'odrive_state' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\commands.h(15): warning C4091: 'typedef ': ignored on left of 'motor_state' when no variable is declared
+  commands.cpp
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(23): warning C4091: 'typedef ': ignored on left of 'ODriveGpioMode' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(32): warning C4091: 'typedef ': ignored on left of 'ODriveStreamProtocolType' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(49): warning C4091: 'typedef ': ignored on left of 'axis_states' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(57): warning C4091: 'typedef ': ignored on left of 'odrive_control_mode' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(77): warning C4091: 'typedef ': ignored on left of 'odrive_component_status' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(97): warning C4091: 'typedef ': ignored on left of 'odrive_procedure_result' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(116): warning C4091: 'typedef ': ignored on left of 'odrive_encoder_id' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(128): warning C4091: 'typedef ': ignored on left of 'odrive_spi_encoder_mode' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(137): warning C4091: 'typedef ': ignored on left of 'odrive_rs485_encoder_mode' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(150): warning C4091: 'typedef ': ignored on left of 'odrive_input_mode' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(157): warning C4091: 'typedef ': ignored on left of 'odrive_motor_type' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\commands.h(10): warning C4091: 'typedef ': ignored on left of 'odrive_state' when no variable is declared
+c:\users\sølve\source\repos\cdpr\cdpr\commands.h(15): warning C4091: 'typedef ': ignored on left of 'motor_state' when no variable is declared
+  Generating Code...
   cdpr.vcxproj -> C:\Users\Sølve\source\repos\cdpr\Debug\cdpr.exe

@@ -39,6 +39,16 @@ int set_axis_state(HANDLE handle, axis_states ax_state) {
 	return 1;
 }
 
+int set_encoder_position(HANDLE handle, double position) {
+	char c[100];
+	uint8_t prec = 5;
+	std::string cstr = "w axis0.pos_estimate " + to_string(position, prec) + "\n";
+	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
+	std::cout << c << std::endl;
+	com_write_ln(handle, c);
+	return 1;
+}
+
 int get_motor_state(HANDLE handle, motor_state* state) {
 	char c[] = "f 0\n";
 	char r[25];

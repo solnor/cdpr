@@ -25,5 +25,6 @@ int get_all_motor_states(HANDLE handles[], std::vector<motor_state*> motor_state
 
 int set_abs_position(HANDLE handle, double pos);
 int set_axis_state(HANDLE handle, axis_states ax_state);
+int set_encoder_position(HANDLE handle, double position);
 
 int set_motor_torque(HANDLE handle, double torque);
