@@ -91,9 +91,9 @@ int set_motor_torque(HANDLE handle, double torque) {
 	std::string cstr = "c 0 " + to_string(torque, prec) + "\n";
 	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
 	//std::cout << handle << ": " << c << std::endl;
-	auto t_settorque = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_settorque - start);
-	std::cout << "set_motor_torque duration: " << duration.count() << " [ms]" << std::endl;
+	//auto t_settorque = std::chrono::high_resolution_clock::now();
+	//auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_settorque - start);
+	//std::cout << "set_motor_torque duration: " << duration.count() << " [ms]" << std::endl;
 	com_write_ln(handle, c);
 	return 1;
 }
