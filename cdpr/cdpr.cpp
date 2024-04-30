@@ -139,6 +139,7 @@ int control_loop() {
 		}
 		
 	}
+	get_all_motor_states(handles, motor_states);
 	std::cout << "Motor positions: " << ms0.pos << ", " << ms1.pos << ", " << ms2.pos << ", " << ms3.pos << std::endl;
 	std::cout << "Start control loop?" << std::endl;
 	std::cin >> input;
