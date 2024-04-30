@@ -49,6 +49,7 @@ int com_read_ln(HANDLE handle, char* c) {
 		if (!r) {
 			std::cout << "Failed to read line.\n" << std::endl;
 		}
+		std::cout << "Reading line: " << c << std::endl;
 		if (*c == 0x0a) {
 			break;
 		}
