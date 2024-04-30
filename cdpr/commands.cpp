@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 
 
 int find_driver_errors(HANDLE handles, odrive_state *state) {
@@ -28,6 +29,23 @@ std::string to_string(double x, uint8_t prec)
 	std::ostringstream ss;
 	ss << std::setprecision(prec) << x;
 	return ss.str();
+}
+
+int get_motor_state(HANDLE handle, motor_state* state) {
+	state->pos  = 0.0;
+	state->vel = 0.0;
+	return 1;
+}
+
+int get_all_motor_states(HANDLE handles[], std::vector<motor_state*> motor_states) {
+	int r = 0;
+	for (uint8_t i = 0; i < 4; i++) {
+		r = get_motor_state(handles[i], motor_states[i]);
+		if (r = 0) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
 int set_motor_torque(HANDLE handle, double torque) {
