@@ -131,6 +131,7 @@ int control_loop() {
 	}
 	std::string input;
 	std::cin >> input;
+	std::cout << "Set home position?" << std::endl;
 	if (is_number(input)) {
 		std::cout << "Setting home position" << std::endl;
 		for (uint8_t i = 0; i < 4; i++) {
@@ -166,7 +167,7 @@ int control_loop() {
 		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 		
-		qd << 0.1, 0, 0;
+		qd << 0.2, 0, 0;
 		e  << qd - q;
 		std::cout << "q: \n" << q << std::endl;
 		std::cout << "e: \n" << e << std::endl;
