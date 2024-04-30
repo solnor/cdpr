@@ -1,6 +1,4 @@
-﻿  algorithms.cpp
-c:\users\sølve\source\repos\cdpr\cdpr\algorithms.h(52): warning C4091: 'typedef ': ignored on left of 'force_alloc_res' when no variable is declared
-  cdpr.cpp
+﻿  cdpr.cpp
 c:\users\sølve\source\repos\cdpr\cdpr\algorithms.h(52): warning C4091: 'typedef ': ignored on left of 'force_alloc_res' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(23): warning C4091: 'typedef ': ignored on left of 'ODriveGpioMode' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(32): warning C4091: 'typedef ': ignored on left of 'ODriveStreamProtocolType' when no variable is declared
@@ -29,7 +27,5 @@ c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(150): warning C4091:
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(157): warning C4091: 'typedef ': ignored on left of 'odrive_motor_type' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\commands.h(10): warning C4091: 'typedef ': ignored on left of 'odrive_state' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\commands.h(15): warning C4091: 'typedef ': ignored on left of 'motor_state' when no variable is declared
-  communication.cpp
-c:\users\sølve\source\repos\cdpr\cdpr\communication.cpp(23): warning C4002: too many arguments for function-like macro invocation 'assert'
   Generating Code...
   cdpr.vcxproj -> C:\Users\Sølve\source\repos\cdpr\Debug\cdpr.exe

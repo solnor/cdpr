@@ -133,7 +133,11 @@ int control_loop() {
 	std::cin >> input;
 	if (is_number(input)) {
 		std::cout << "Setting home position" << std::endl;
-		set_encoder_position(handles[0], 0.0);
+		for (uint8_t i = 0; i < 4; i++) {
+			set_encoder_position(handles[i], 0.0);
+			Sleep(10);
+		}
+		
 	}
 	std::cout << "Motor positions: " << ms0.pos << ", " << ms1.pos << ", " << ms2.pos << ", " << ms3.pos << std::endl;
 	std::cout << "Start control loop?" << std::endl;
