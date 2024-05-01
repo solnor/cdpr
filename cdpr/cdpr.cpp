@@ -156,7 +156,10 @@ int control_loop() {
 	while (running) {
 
 		any_error = check_if_any_driver_errors(handles);
-		if (any_error) running = 0;
+		if (any_error) { 
+			running = 0;
+			break;
+		};
 
 		auto start = std::chrono::high_resolution_clock::now();
 		get_all_motor_states(handles, motor_states);
@@ -209,6 +212,10 @@ int control_loop() {
 	}
 	if (any_error) {
 		set_all_motor_torques(handles, Eigen::Vector4d::Zero());
+		std::cout << "Error encountered" << std::endl;
+		int errors[4];
+		read_all_driver_error_statuses(handles, errors);
+		std::cout << "Setting all torques to zero" << std::endl;
 	} else {
 		set_all_motor_torques(handles, (0.3*Eigen::Vector4d::Ones()).cwiseProduct((-1)*motor_signs));
 	}
