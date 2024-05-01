@@ -288,8 +288,8 @@ int control_loop() {
 
 		auto t_loop = std::chrono::high_resolution_clock::now();
 		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
-		//qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
-		qd << 0.1, 0, 0;
+		qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
+		//qd << 0.1, 0, 0;
 		e  << qd - q;
 		
 		wd << Kp * e + Ki * eint;
