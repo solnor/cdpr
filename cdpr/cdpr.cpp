@@ -72,14 +72,18 @@ Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 	Eigen::Vector4d velp;
 	
 	velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
-				 std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
-				 std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
-				 std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+			std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
+			std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
+			std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+	//std::cout << "4&1: " << (1 & (bool)4) << std::endl;
+	//std::cout << (bool)(ceil(abs(velp(1)))) << std::endl;
+	//std::cout << (1 & (bool)(ceil(abs(velp(1))))) << std::endl;
+	//std::cout << !(1 & (bool)(ceil(abs(velp(1))))) << std::endl;
 	std::cout << "velp trunc: \n" << velp << std::endl;
-	velp << !(1 & (int)(ceil_abs_w_sign(velp(0)))),
-			!(1 & (int)(ceil_abs_w_sign(velp(1)))),
-			!(1 & (int)(ceil_abs_w_sign(velp(2)))),
-			!(1 & (int)(ceil_abs_w_sign(velp(3))));
+	velp << !(1 & (bool)(ceil(abs(velp(0))))),
+			!(1 & (bool)(ceil(abs(velp(1))))),
+			!(1 & (bool)(ceil(abs(velp(2))))),
+			!(1 & (bool)(ceil(abs(velp(3)))));
 	std::cout << "velp bool: \n" << velp << std::endl;
 	
 	Eigen::Vector3d ep;
@@ -187,7 +191,7 @@ int control_loop() {
 	Eigen::Vector3d e_t      = Eigen::Vector3d::Zero();
 	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
 	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
-	double precv = 2;
+	double precv = 1;
 	double precx = 3;
 	double precy = 3;
 	double prect = 0;
@@ -374,14 +378,21 @@ int main()
 		std::cout << "Oke" << std::endl;
 	}*/
 
-	/*Eigen::Vector4d f_static(0.0840 * 1 / r_d,
+	Eigen::Vector4d f_static(0.0840 * 1 / r_d,
 		0.0820 * 1 / r_d,
 		0.1040 * 1 / r_d,
 		0.0780 * 1 / r_d);
 
 	Eigen::Vector4d f_pinv(0,0.1,-1, -3);
-	Eigen::Vector4d vels(1,0.1,-0.01, 0.001);
-	std::cout << "fs:\n"<< calculate_fs(vels, f_pinv, f_static, 2, 0) << std::endl;*/
+	Eigen::Vector3d er(0.1,0.1,-1);
+	Eigen::Vector4d vels(1,-3.1,-0.01, 3.001);
+	double precv = 2;
+	double precx = 3;
+	double precy = 3;
+	double prect = 0;
+	std::cout << "fs:\n"<< calculate_fs(vels, er, f_static, precv, precx, precy, prect) << std::endl;
+
+
 	control_loop();
 
 
