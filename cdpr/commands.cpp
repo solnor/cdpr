@@ -205,7 +205,7 @@ int check_if_any_driver_errors(HANDLE handles[]) {
 	int error = 0;
 	for (uint8_t i = 0; i < 4; i++) {
 		error = check_if_driver_error(handles[i]);
-		break;
+		if (error) break;
 	}
 	return error;
 }
