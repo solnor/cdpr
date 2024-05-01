@@ -120,8 +120,16 @@ int control_loop() {
 	double ydiff = 371.4759 * convmm2m;
 	double xdiff = 56.40783 * convmm2m;
 
+	bool any_error = 0;
+
 	Eigen::Vector4d test = Eigen::Vector4d::Zero();
+
 	com_init(handles, odrv_ports);
+
+	std::cout << "Set starting torques?" << std::endl;
+	std::string input;
+	std::cin >> input;
+	std::cout << "Setting starting torques" << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
 		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
 		Sleep(10);
@@ -130,16 +138,15 @@ int control_loop() {
 		
 	}
 	std::cout << "Set home position?" << std::endl;
-	std::string input;
 	std::cin >> input;
-	if (is_number(input)) {
-		std::cout << "Setting home position" << std::endl;
-		for (uint8_t i = 0; i < 4; i++) {
-			set_encoder_position(handles[i], 0.0);
-			Sleep(10);
-		}
-		
+	//if (is_number(input)) {
+	std::cout << "Setting home position" << std::endl;
+	for (uint8_t i = 0; i < 4; i++) {
+		set_encoder_position(handles[i], 0.0);
+		Sleep(10);
 	}
+		
+	//}
 	get_all_motor_states(handles, motor_states);
 	std::cout << "Motor positions: " << ms0.pos << ", " << ms1.pos << ", " << ms2.pos << ", " << ms3.pos << std::endl;
 	std::cout << "Start control loop?" << std::endl;
@@ -147,75 +154,63 @@ int control_loop() {
 	std::cout << "Running" << std::endl;
 	auto start_loop = std::chrono::high_resolution_clock::now();
 	while (running) {
-		//std::cout << "Start loop" << std::endl;
+
+		any_error = check_if_any_driver_errors(handles);
+		if (any_error) running = 0;
+
 		auto start = std::chrono::high_resolution_clock::now();
-		//std::cout << "Getting motor states" << std::endl;
 		get_all_motor_states(handles, motor_states);
-		auto t_motor_states = std::chrono::high_resolution_clock::now();
-		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_motor_states - start);
-		//std::cout << "get_all_motor_states duration: " << duration.count() << " [ms]" << std::endl;
 		pos << ms0.pos,
 			   ms1.pos,	
 			   ms2.pos,
 			   ms3.pos;
-		//std::cout << "Calculating l" << std::endl;
+
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
+
 		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
 			   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
 			   l(2) - sqrt( sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // total cable length
 			   l(3) - sqrt( sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
-		//std::cout << "Calculating forward kinematics" << std::endl;
+
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, l), 
 							   lfk, r_p);
-		auto t_fk = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_fk - t_motor_states);
-		//std::cout << "forward_kinematics duration: " << duration.count() << " [ms]" << std::endl;
-		//std::cout << "Calculating inverse kinematics" << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
-		auto t_ik = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_ik - t_fk);
-		//std::cout << "inverse_kinematics duration: " << duration.count() << " [ms]" << std::endl;
+
 		auto t_loop = std::chrono::high_resolution_clock::now();
 		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
 		qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
 		e  << qd - q;
-		//std::cout << "q: \n" << q << std::endl;
-		//std::cout << "e: \n" << e << std::endl;
+		
 		wd << Kp * e + Ki * eint;
-		//std::cout << "Calculating structure matrix" << std::endl;
+		
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		auto t_sm = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_sm - t_ik);
-		//std::cout << "calculate_structure_matrix duration: " << duration.count() << " [ms]" << std::endl;
+		
 		//std::cout << "l: \n" << l << std::endl;
 		//std::cout << "wd: \n" << wd << std::endl;
 		//std::cout << "AT: \n" << AT << std::endl;
+
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
-		auto t_fa = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_fa - t_sm);
-		//std::cout << "force_alloc_iterative_slack duration: " << duration.count() << " [ms]" << std::endl;
+		
 		// TODO: Add f0
 
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
 		//std::cout << "T: \n" << T << std::endl;
-		// TODO: Write torques to motor drivers
-		//std::cout << "Done" << std::endl;
-		for (uint8_t i = 0; i < 4; i++) {
-			//test(i) = T*(-1)*motor_signs(i);
-			//std::cout << test << "\n" << std::endl;
-			//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+		
+		/*for (uint8_t i = 0; i < 4; i++) {
 			set_motor_torque(handles[i], T(i));
-			//Sleep(1);
-		}
-		auto t_st = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_st - t_fa);
-		//std::cout << "set_motor_torque duration: " << duration.count() << " [ms]" << std::endl;
+		}*/
+
+		set_all_motor_torques(handles, T);
+
 		//std::cout << "f: \n" << fres.f << std::endl;
-		auto stop = std::chrono::high_resolution_clock::now();
-		duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-		std::cout << "Loop duration: " << duration.count() << " [ms]" << std::endl;
+		
 		poll_keys();
+	}
+	if (any_error) {
+		set_all_motor_torques(handles, Eigen::Vector4d::Zero());
+	} else {
+		set_all_motor_torques(handles, (0.3*Eigen::Vector4d::Ones()).cwiseProduct((-1)*motor_signs));
 	}
 	return 1;
 }
@@ -225,7 +220,7 @@ int main()
 	
 	int ret = init_cdpr_params();
 	
-	auto start = std::chrono::high_resolution_clock::now();
+	/*auto start = std::chrono::high_resolution_clock::now();
 	inv_res inv_kin = inverse_kinematics(a, b, q, r_p);
 	std::cout << inv_kin.l << std::endl;
 	Eigen::Vector3d q0 = fk_init_estimate(a, b, inv_kin.l);
@@ -245,21 +240,24 @@ int main()
 	std::cout << "force allocation: \n" << fares.f << std::endl;
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
+	std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;*/
 
-	std::string input;
+	/*std::string input;
 	std::cin >> input;
 	if (is_number(input)) {
 		std::cout << "Oke" << std::endl;
-	}
+	}*/
 
 	control_loop();
-
-	int i = 0;
+	/*std::cout << "Error: " << read_driver_error_status(handles[0]) << std::endl;
+	int errors[4];
+	read_all_driver_error_statuses(handles, errors);
+	std::cout << "Errors: " << errors[0] << errors[1] << errors[2] << errors[3] << std::endl;*/
+	/*int i = 0;
 	while (i < 1000) {
 		poll_keys();
 		i++;
 		Sleep(1);
-	}
+	}*/
 	system("pause");
 }

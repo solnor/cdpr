@@ -36,7 +36,6 @@ int com_init(HANDLE handles[n_odrv], LPCSTR odrv_ports[n_odrv]) {
 		serialTimeouts.WriteTotalTimeoutMultiplier = 0;
 		serialTimeouts.WriteTotalTimeoutConstant = 0;
 		SetCommTimeouts(handles[i], &serialTimeouts);
-		std::cout << handles[i] << std::endl;
 	}
 	return 1;
 }

@@ -2,8 +2,7 @@
 #include "odrive_definitions.h"
 #include "communication.h"
 #include <vector>
-
-//int buf_size = 0xa;
+#include <Dense>
 
 typedef struct odrive_state {
 	double k = 0.0;
@@ -28,3 +27,11 @@ int set_axis_state(HANDLE handle, axis_states ax_state);
 int set_encoder_position(HANDLE handle, double position);
 
 int set_motor_torque(HANDLE handle, double torque);
+int set_all_motor_torques(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d>& torques);
+
+int read_driver_error_status(HANDLE handle);
+int read_all_driver_error_statuses(HANDLE handles[], int *errors);
+
+int check_if_driver_error(HANDLE handle);
+int check_if_any_driver_errors(HANDLE handles[]);
+
