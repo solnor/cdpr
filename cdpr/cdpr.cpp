@@ -179,10 +179,14 @@ int control_loop() {
 							 0.0820 * 1 / r_d,
 							 0.1040 * 1 / r_d,
 							 0.0780 * 1 / r_d);
-	Eigen::Vector4d f_loss(2.195,
+	//Eigen::Vector4d f_loss(2.195,
+	//					   2.295,
+	//					   2.245,
+	//					   2.245);
+	Eigen::Vector4d f_loss(3.195,
 						   2.295,
 						   2.245,
-						   2.245);
+						   3.245);
 	//Eigen::Vector4d f_loss(2.195,
 	//					   -1,
 	//					   -1,
@@ -294,7 +298,7 @@ int control_loop() {
 		qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
 		//qd << 0.1, 0, 0;
 		e  << qd - q;
-		
+		e << 0,0,0;
 		wd << Kp * e + Ki * eint;
 		we << AT * f_loss;
 		wd << 0, 0, 0;
@@ -329,6 +333,7 @@ int control_loop() {
 		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
+		std::cout << "A^Tf: \n" << AT * fres.f << std::endl;
 		//std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
