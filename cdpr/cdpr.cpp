@@ -75,15 +75,18 @@ Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 				 std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
 				 std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
 				 std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+	std::cout << "velp trunc: \n" << velp << std::endl;
 	velp << !(1 & (int)(ceil_abs_w_sign(velp(0)))),
 			!(1 & (int)(ceil_abs_w_sign(velp(1)))),
 			!(1 & (int)(ceil_abs_w_sign(velp(2)))),
 			!(1 & (int)(ceil_abs_w_sign(velp(3))));
+	std::cout << "velp bool: \n" << velp << std::endl;
 	
 	Eigen::Vector3d ep;
 	ep << std::trunc(e(0)*pow(10, precx)) / pow(10, precx),
 		  std::trunc(e(1)*pow(10, precy)) / pow(10, precy),
 		  std::trunc(e(2)*pow(10, prect)) / pow(10, prect);
+	std::cout << "ep: \n" << ep << std::endl;
 
 	/*Eigen::Vector4d dir(sgn(f_pinv(0)), 
 						sgn(f_pinv(1)), 
