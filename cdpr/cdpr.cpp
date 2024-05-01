@@ -183,10 +183,10 @@ int control_loop() {
 	//					   2.295,
 	//					   2.245,
 	//					   2.245);
-	Eigen::Vector4d f_loss(3.195,
+	Eigen::Vector4d f_loss(6.195,
 						   2.295,
 						   2.245,
-						   3.245);
+						   6.245);
 	//Eigen::Vector4d f_loss(2.195,
 	//					   -1,
 	//					   -1,
@@ -333,7 +333,7 @@ int control_loop() {
 		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
-		std::cout << "A^Tf: \n" << AT * fres.f << std::endl;
+		std::cout << "A^T(f+f0): \n" << AT * (fres.f+f0) << std::endl;
 		//std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
