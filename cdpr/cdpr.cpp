@@ -179,9 +179,13 @@ int control_loop() {
 							 0.0820 * 1 / r_d,
 							 0.1040 * 1 / r_d,
 							 0.0780 * 1 / r_d);
+	//Eigen::Vector4d f_loss(2.195,
+	//					   2.295,
+	//					   2.245,
+	//					   2.245);
 	Eigen::Vector4d f_loss(2.195,
-						   2.295,
-						   2.245,
+						   1.295,
+						   1.245,
 						   2.245);
 	/*Eigen::Vector4d f_loss(1.,
 						   1.,
