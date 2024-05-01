@@ -306,6 +306,7 @@ int control_loop() {
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
 		f_pinv = AT_pinv * wd;
 		fs = calculate_fs(vel_m, e, f_static, precv, precx, precy, prect);
+		fs << 0, 0, 0, 0;
 		/*e_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
 			   std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
 			   std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
@@ -320,7 +321,7 @@ int control_loop() {
 		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
 		std::cout << "vel_m: \n" << vel_m << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
-		std::cout << "fs: \n" << fs << std::endl;
+		//std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
 		/*for (uint8_t i = 0; i < 4; i++) {
