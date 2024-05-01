@@ -259,7 +259,7 @@ int control_loop() {
 
 		std::cout << "ms3.vel: " << ms3.vel << std::endl;
 
-		vel_m << vel_m.cwiseProduct(motor_signs);
+		vel_m << vel.cwiseProduct(motor_signs);
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
 
 		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
