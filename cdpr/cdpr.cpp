@@ -63,10 +63,12 @@ template <typename T> int sgn(T val) {
 }
 
 Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
-							 const Eigen::Ref<const Eigen::Vector4d>& f_pinv,
+							 const Eigen::Ref<const Eigen::Vector3d>& e,
 							 const Eigen::Ref<const Eigen::Vector4d>& f_static,
 							 double precv,
-	                         double precf) {
+	                         double precx,
+	                         double precy,
+	                         double prect) {
 	Eigen::Vector4d velp;
 	
 	velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
@@ -78,11 +80,10 @@ Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 			!(1 & (int)(ceil_abs_w_sign(velp(2)))),
 			!(1 & (int)(ceil_abs_w_sign(velp(3))));
 	
-	Eigen::Vector4d f_pinvp;
-	f_pinvp << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
-			   std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
-			   std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
-			   std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);
+	Eigen::Vector3d ep;
+	ep << std::trunc(e(0)*pow(10, precx)) / pow(10, precx),
+		  std::trunc(e(1)*pow(10, precy)) / pow(10, precy),
+		  std::trunc(e(2)*pow(10, prect)) / pow(10, prect);
 
 	/*Eigen::Vector4d dir(sgn(f_pinv(0)), 
 						sgn(f_pinv(1)), 
@@ -90,7 +91,7 @@ Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 						sgn(f_pinv(3)));*/
 	Eigen::Vector4d fs;
 	//fs << (int)f_pinvp.any()*velp.cwiseProduct(dir.cwiseProduct(f_static));
-	fs << (int)f_pinvp.any()*velp.cwiseProduct(f_static);
+	fs << (int)ep.any()*velp.cwiseProduct(f_static);
 	return fs;
 	//Eigen::Vector4d smt;
 	///*smt << ((int)(ceil_abs_w_sign(vel_trunc(0)))),
@@ -176,11 +177,13 @@ int control_loop() {
 						   2.245,
 						   1.845);
 	Eigen::Vector4d f_pinv   = Eigen::Vector4d::Zero();
-	Eigen::Vector4d f_pinv_t = Eigen::Vector4d::Zero();
+	Eigen::Vector3d e_t      = Eigen::Vector3d::Zero();
 	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
 	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
 	double precv = 2;
-	double precf = 0;
+	double precx = 3;
+	double precy = 3;
+	double prect = 0;
 
 	Eigen::Vector3d q = Eigen::Vector3d::Zero();
 	Eigen::Vector3d qd;
@@ -290,19 +293,19 @@ int control_loop() {
 
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
 		f_pinv = AT_pinv * wd;
-		fs = calculate_fs(vel_m, f_pinv, f_static, precv, precf);
-		f_pinv_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
-					std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
-					std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
-					std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);
-		f0 << sgn(f_pinv_t(0))*(fs(0) + f_loss(0)),
-			  sgn(f_pinv_t(1))*(fs(1) + f_loss(1)),
-			  sgn(f_pinv_t(2))*(fs(2) + f_loss(2)),
-			  sgn(f_pinv_t(3))*(fs(3) + f_loss(3));
+		fs = calculate_fs(vel_m, e, f_static, precv, precx, precy, prect);
+		/*e_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
+			   std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
+			   std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
+			   std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);*/
+		f0 << sgn(f_pinv(0))*(fs(0) + f_loss(0)),
+			  sgn(f_pinv(1))*(fs(1) + f_loss(1)),
+			  sgn(f_pinv(2))*(fs(2) + f_loss(2)),
+			  sgn(f_pinv(3))*(fs(3) + f_loss(3));
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
 
 		std::cout << "f_pinv: \n" << f_pinv << std::endl;
-		std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
+		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
 		std::cout << "vel_m: \n" << vel_m << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
 		std::cout << "fs: \n" << fs << std::endl;
@@ -363,14 +366,14 @@ int main()
 		std::cout << "Oke" << std::endl;
 	}*/
 
-	Eigen::Vector4d f_static(0.0840 * 1 / r_d,
+	/*Eigen::Vector4d f_static(0.0840 * 1 / r_d,
 		0.0820 * 1 / r_d,
 		0.1040 * 1 / r_d,
 		0.0780 * 1 / r_d);
 
 	Eigen::Vector4d f_pinv(0,0.1,-1, -3);
 	Eigen::Vector4d vels(1,0.1,-0.01, 0.001);
-	std::cout << "fs:\n"<< calculate_fs(vels, f_pinv, f_static, 2, 0) << std::endl;
+	std::cout << "fs:\n"<< calculate_fs(vels, f_pinv, f_static, 2, 0) << std::endl;*/
 	control_loop();
 
 
