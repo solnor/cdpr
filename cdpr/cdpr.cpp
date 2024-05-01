@@ -315,7 +315,7 @@ int control_loop() {
 			set_motor_torque(handles[i], T(i));
 		}*/
 
-		//set_all_motor_torques(handles, T);
+		set_all_motor_torques(handles, T);
 
 		//std::cout << "f: \n" << fres.f << std::endl;
 		
