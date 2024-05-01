@@ -184,8 +184,8 @@ int control_loop() {
 	//					   2.245,
 	//					   2.245);
 	Eigen::Vector4d f_loss(2.195,
-						   -0.5,
-						   -0.5,
+						   -1,
+						   -1,
 						   2.245);
 	/*Eigen::Vector4d f_loss(1.,
 						   1.,
@@ -275,8 +275,6 @@ int control_loop() {
 			   ms2.vel,
 			   ms3.vel;
 
-		std::cout << "ms3.vel: " << ms3.vel << std::endl;
-
 		vel_m << vel.cwiseProduct(motor_signs);
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
 
@@ -322,9 +320,10 @@ int control_loop() {
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
 
 		std::cout << "f_pinv: \n" << f_pinv << std::endl;
+		std::cout << "f: \n" << fres.f << std::endl;
 		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
-		std::cout << "vel_m: \n" << vel_m << std::endl;
-		std::cout << "f0: \n" << f0 << std::endl;
+		//std::cout << "vel_m: \n" << vel_m << std::endl;
+		//std::cout << "f0: \n" << f0 << std::endl;
 		//std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
