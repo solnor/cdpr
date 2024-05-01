@@ -293,7 +293,7 @@ int control_loop() {
 		e  << qd - q;
 		
 		wd << Kp * e + Ki * eint;
-		
+		wd << 0, 0, 0;
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		
 		std::cout << "q: \n" << q << std::endl;
