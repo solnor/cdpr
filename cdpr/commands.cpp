@@ -67,7 +67,7 @@ int get_motor_state(HANDLE handle, motor_state* state) {
 	state->vel = std::stof(rstr.substr(index_delim + 1, rstr.length() - index_delim - 1));
 
 	//std::cout << handle << ", pos: " << state->pos << std::endl;
-	//std::cout << handle << ", vel: " << state->vel << std::endl;
+	std::cout << handle << ", vel: " << state->vel << std::endl;
 
 	return 1;
 }

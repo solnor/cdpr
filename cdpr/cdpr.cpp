@@ -256,6 +256,9 @@ int control_loop() {
 			   ms1.vel,	
 			   ms2.vel,
 			   ms3.vel;
+
+		std::cout << "ms3.vel: " << ms3.vel << std::endl;
+
 		vel_m << vel_m.cwiseProduct(motor_signs);
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
 
