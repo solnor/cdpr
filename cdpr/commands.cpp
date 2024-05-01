@@ -166,7 +166,7 @@ int read_driver_error_status(HANDLE handle) {
 		return 8;
 		break;
 	default:
-		std::cout << "Unknown error" << std::endl;
+		printf("Unknown error: %x\n", error);
 		return 9;
 		break;
 	}

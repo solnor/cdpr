@@ -7,6 +7,7 @@
 #include "commands.h"
 #include "odrive_definitions.h"
 #include <Dense>
+#include <QR>
 #include <cstdlib>
 #include <string>
 #include <chrono>
@@ -52,6 +53,72 @@ bool is_number(const std::string& s)
 	return !s.empty() && it == s.end();
 }
 
+double ceil_abs_w_sign(double d) {
+	return d > 0 ? ceil(d) :
+		           floor(d);
+}
+// https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+template <typename T> int sgn(T val) {
+	return (T(0) < val) - (val < T(0));
+}
+
+Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
+							 const Eigen::Ref<const Eigen::Vector4d>& f_pinv,
+							 const Eigen::Ref<const Eigen::Vector4d>& f_static,
+							 double precv,
+	                         double precf) {
+	Eigen::Vector4d velp;
+	
+	velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
+				 std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
+				 std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
+				 std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+	velp << !(1 & (int)(ceil_abs_w_sign(velp(0)))),
+			!(1 & (int)(ceil_abs_w_sign(velp(1)))),
+			!(1 & (int)(ceil_abs_w_sign(velp(2)))),
+			!(1 & (int)(ceil_abs_w_sign(velp(3))));
+	
+	Eigen::Vector4d f_pinvp;
+	f_pinvp << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
+			   std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
+			   std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
+			   std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);
+
+	/*Eigen::Vector4d dir(sgn(f_pinv(0)), 
+						sgn(f_pinv(1)), 
+						sgn(f_pinv(2)), 
+						sgn(f_pinv(3)));*/
+	Eigen::Vector4d fs;
+	//fs << (int)f_pinvp.any()*velp.cwiseProduct(dir.cwiseProduct(f_static));
+	fs << (int)f_pinvp.any()*velp.cwiseProduct(f_static);
+	return fs;
+	//Eigen::Vector4d smt;
+	///*smt << ((int)(ceil_abs_w_sign(vel_trunc(0)))),
+	//	((int)(ceil_abs_w_sign(vel_trunc(1)))),
+	//	((int)(ceil_abs_w_sign(vel_trunc(2)))),
+	//	((int)(ceil_abs_w_sign(vel_trunc(3))));*/
+	//std::cout << "ceiled: \n" << smt << "\n" << std::endl;
+	//std::cout << "smt: \n" << smt << "\n" << std::endl;
+
+	////Eigen::Vector4d f_pinv(0, 0.1, 0.03, 3);
+	////Eigen::Vector4d f_pinv(0,0,0,0.0001);
+	////Eigen::Vector4d t4 = ;
+	//std::cout << "any: " << f_pinv.any() << "\n" << std::endl;
+
+	//
+	////std::cout << "f_pinv_trunc: \n" << f_pinv_trunc << "\n" << std::endl;
+	////std::cout << "any f_pinv_trunc: \n" << f_pinv_trunc.any() << "\n" << std::endl;
+	//
+	////t6 << t6 + Eigen::Vector4d::Ones();
+	//std::cout << "t6: \n" << t6 << std::endl;
+	///*smt << !(1&(int)(ceil(vel_trunc(0)))),
+	//	   !(1&(int)(ceil(vel_trunc(1)))),
+	//	   !(1&(int)(ceil(vel_trunc(2)))),
+	//	   !(1&(int)(ceil(vel_trunc(3))));
+	//std::cout << smt << "\n" << std::endl;*/
+	//std::cout << smt.cwiseProduct(t3) << "\n" << std::endl;
+}
+
 // Control loop
 // Get pos, vel
 // Process pos to get l
@@ -80,6 +147,8 @@ int control_loop() {
 	motor_states.push_back(&ms3);
 
 	Eigen::Vector4d pos;
+	Eigen::Vector4d vel;
+	Eigen::Vector4d vel_m;
 	Eigen::Vector4d l;
 	Eigen::Vector4d l0(1.2260, 
 		               1.1833,
@@ -89,14 +158,29 @@ int control_loop() {
 	
 	inv_res invkin;
 
-	Eigen::MatrixXd AT = Eigen::MatrixXd::Zero(3, 4);
+	Eigen::MatrixXd AT      = Eigen::MatrixXd::Zero(3, 4);
+	Eigen::MatrixXd AT_pinv = Eigen::MatrixXd::Zero(3, 4);
 
 	double f_min = 15;
 	double f_max = 80;
 	double f_ref = (f_max + f_min) / 2;
 	Eigen::Vector4d f_prev = f_ref * Eigen::Vector4d::Ones();
 	force_alloc_res fres;
-	Eigen::Vector4d f0 = Eigen::Vector4d::Zero();
+
+	Eigen::Vector4d f_static(0.0840 * 1 / r_d,
+							 0.0820 * 1 / r_d,
+							 0.1040 * 1 / r_d,
+							 0.0780 * 1 / r_d);
+	Eigen::Vector4d f_loss(2.195,
+						   2.295,
+						   2.245,
+						   1.845);
+	Eigen::Vector4d f_pinv   = Eigen::Vector4d::Zero();
+	Eigen::Vector4d f_pinv_t = Eigen::Vector4d::Zero();
+	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
+	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
+	double precv = 2;
+	double precf = 0;
 
 	Eigen::Vector3d q = Eigen::Vector3d::Zero();
 	Eigen::Vector3d qd;
@@ -168,6 +252,11 @@ int control_loop() {
 			   ms2.pos,
 			   ms3.pos;
 
+		vel << ms0.vel,
+			   ms1.vel,	
+			   ms2.vel,
+			   ms3.vel;
+		vel_m << vel_m.cwiseProduct(motor_signs);
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
 
 		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
@@ -182,7 +271,8 @@ int control_loop() {
 
 		auto t_loop = std::chrono::high_resolution_clock::now();
 		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
-		qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
+		//qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
+		qd << 0.1, 0, 0;
 		e  << qd - q;
 		
 		wd << Kp * e + Ki * eint;
@@ -194,17 +284,28 @@ int control_loop() {
 		//std::cout << "AT: \n" << AT << std::endl;
 
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
-		
-		// TODO: Add f0
 
+		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
+		f_pinv = AT_pinv * wd;
+		fs = calculate_fs(vel_m, f_pinv, f_static, precv, precf);
+		f_pinv_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
+					std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
+					std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
+					std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);
+		f0 << sgn(f_pinv_t(0))*(fs(0) + f_loss(0)),
+			  sgn(f_pinv_t(1))*(fs(1) + f_loss(1)),
+			  sgn(f_pinv_t(2))*(fs(2) + f_loss(2)),
+			  sgn(f_pinv_t(3))*(fs(3) + f_loss(3));
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
+		std::cout << "f0: \n" << f0 << std::endl;
+		std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
 		/*for (uint8_t i = 0; i < 4; i++) {
 			set_motor_torque(handles[i], T(i));
 		}*/
 
-		set_all_motor_torques(handles, T);
+		//set_all_motor_torques(handles, T);
 
 		//std::cout << "f: \n" << fres.f << std::endl;
 		
@@ -255,7 +356,17 @@ int main()
 		std::cout << "Oke" << std::endl;
 	}*/
 
+	Eigen::Vector4d f_static(0.0840 * 1 / r_d,
+		0.0820 * 1 / r_d,
+		0.1040 * 1 / r_d,
+		0.0780 * 1 / r_d);
+
+	Eigen::Vector4d f_pinv(0,0.1,-1, -3);
+	Eigen::Vector4d vels(1,0.1,-0.01, 0.001);
+	std::cout << "fs:\n"<< calculate_fs(vels, f_pinv, f_static, 2, 0) << std::endl;
 	control_loop();
+
+
 	/*std::cout << "Error: " << read_driver_error_status(handles[0]) << std::endl;
 	int errors[4];
 	read_all_driver_error_statuses(handles, errors);
