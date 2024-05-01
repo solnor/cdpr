@@ -180,7 +180,7 @@ int control_loop() {
 	Eigen::Vector3d e_t      = Eigen::Vector3d::Zero();
 	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
 	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
-	double precv = 2;
+	double precv = 1;
 	double precx = 3;
 	double precy = 3;
 	double prect = 0;
