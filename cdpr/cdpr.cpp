@@ -192,7 +192,7 @@ int control_loop() {
 	Eigen::Vector4d T = Eigen::Vector4d::Zero();
 
 	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
-	Kp(0, 0) = 250; // Proportional gain x
+	Kp(0, 0) = 200; // Proportional gain x
 	Kp(1, 1) = 150; // Proportional gain y
 	Kp(2, 2) = 5;   // Proportional gain theta
 
@@ -360,9 +360,9 @@ int main()
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 	std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;*/
 
-	/*std::string input;
+	std::string input;
 	std::cin >> input;
-	if (is_number(input)) {
+	/*if (is_number(input)) {
 		std::cout << "Oke" << std::endl;
 	}*/
 
