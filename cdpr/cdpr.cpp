@@ -179,14 +179,14 @@ int control_loop() {
 							 0.0820 * 1 / r_d,
 							 0.1040 * 1 / r_d,
 							 0.0780 * 1 / r_d);
-	//Eigen::Vector4d f_loss(2.195,
-	//					   2.295,
-	//					   2.245,
-	//					   2.245);
 	Eigen::Vector4d f_loss(2.195,
-						   -1,
-						   -1,
+						   2.295,
+						   2.245,
 						   2.245);
+	//Eigen::Vector4d f_loss(2.195,
+	//					   -1,
+	//					   -1,
+	//					   2.245);
 	/*Eigen::Vector4d f_loss(1.,
 						   1.,
 						   1.,
@@ -204,6 +204,7 @@ int control_loop() {
 	Eigen::Vector3d qd;
 	Eigen::Vector3d e;
 	Eigen::Vector3d wd;
+	Eigen::Vector3d we;
 	Eigen::Vector4d T = Eigen::Vector4d::Zero();
 
 	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
@@ -295,9 +296,13 @@ int control_loop() {
 		e  << qd - q;
 		
 		wd << Kp * e + Ki * eint;
+		we << AT * f_loss;
 		wd << 0, 0, 0;
+		wd << wd + AT * f_loss;
+
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		
+		std::cout << "wd: \n" << wd << std::endl;
 		std::cout << "q: \n" << q << std::endl;
 		//std::cout << "l: \n" << l << std::endl;
 		//std::cout << "wd: \n" << wd << std::endl;
