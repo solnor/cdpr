@@ -297,6 +297,10 @@ int control_loop() {
 			  sgn(f_pinv_t(2))*(fs(2) + f_loss(2)),
 			  sgn(f_pinv_t(3))*(fs(3) + f_loss(3));
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
+
+		std::cout << "f_pinv: \n" << f_pinv << std::endl;
+		std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
+		std::cout << "vel_m: \n" << vel_m << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
 		std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
