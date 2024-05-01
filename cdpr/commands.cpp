@@ -195,6 +195,7 @@ int check_if_driver_error(HANDLE handle) {
 	int error = conv_hex_ss_to_int(ss);
 
 	if (((int)0x11111111 & error)) {
+		std::cout << "check_if_driver_error: error" << std::endl;
 		return 1;
 	}
 
