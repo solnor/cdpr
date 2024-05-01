@@ -328,7 +328,7 @@ int control_loop() {
 		std::cout << "f: \n" << fres.f << std::endl;
 		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
-		//std::cout << "f0: \n" << f0 << std::endl;
+		std::cout << "f0: \n" << f0 << std::endl;
 		//std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
