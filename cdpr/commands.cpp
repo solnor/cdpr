@@ -117,13 +117,16 @@ int read_driver_error_status(HANDLE handle) {
 
 	char c[] = "r axis0.active_errors \n";
 	char r[25];
+	std::cout << "r: " << r << std::endl;
 	com_write_ln(handle, c);
 	com_read_ln(handle, r);
 	//char r[] = "0x00000002"; // Testing
 
 	std::stringstream ss;
+	std::cout << "r: " << r << std::endl;
 	ss << std::hex << r;
 	int error = conv_hex_ss_to_int(ss);
+	std::cout << "error: " << error << std::endl;
 
 	odrive_error oe;
 	oe = (odrive_error)error;
