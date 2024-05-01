@@ -298,7 +298,7 @@ int control_loop() {
 		wd << Kp * e + Ki * eint;
 		we << AT * f_loss;
 		wd << 0, 0, 0;
-		wd << wd + AT * f_loss;
+		//wd << wd + AT * f_loss;
 
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		
@@ -311,7 +311,7 @@ int control_loop() {
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
-		f_pinv = AT_pinv * wd;
+		f_pinv = AT_pinv * we;
 		fs = calculate_fs(vel_m, e, f_static, precv, precx, precy, prect);
 		fs << 0, 0, 0, 0;
 		/*e_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
@@ -322,7 +322,7 @@ int control_loop() {
 			  sgn(f_pinv(1))*(fs(1) + f_loss(1)),
 			  sgn(f_pinv(2))*(fs(2) + f_loss(2)),
 			  sgn(f_pinv(3))*(fs(3) + f_loss(3));
-		T = (fres.f).cwiseProduct(r_d*(-1)*motor_signs);
+		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
 
 		std::cout << "f_pinv: \n" << f_pinv << std::endl;
 		std::cout << "f: \n" << fres.f << std::endl;
