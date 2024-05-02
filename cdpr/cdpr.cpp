@@ -74,11 +74,11 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
 			std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
 
-	velp << !(1 & (bool)(ceil(abs(velp(0))))),
-			!(1 & (bool)(ceil(abs(velp(1))))),
-			!(1 & (bool)(ceil(abs(velp(2))))),
-			!(1 & (bool)(ceil(abs(velp(3)))));
-
+	velp << (bool)(ceil(abs(velp(0)))),
+			(bool)(ceil(abs(velp(1)))),
+			(bool)(ceil(abs(velp(2)))),
+			(bool)(ceil(abs(velp(3))));
+	std::cout << "velp" << std::endl;
 	velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
 			sgn(vels(2))*velp(2),
