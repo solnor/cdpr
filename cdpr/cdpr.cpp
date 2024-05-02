@@ -387,8 +387,10 @@ int control_loop() {
 		std::cout << "lfk: \n" << lfk << std::endl;*/
 		//std::cout << "wd: \n" << wd << std::endl;
 		//std::cout << "AT: \n" << AT << std::endl;
-
-		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
+		
+		//f_ref = (f_min + f_max) / 2;
+		fres.f = f_ref*Eigen::Vector4d::Ones() - AT_pinv*(wd + AT * f_ref);
+		//fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
 		
 		fs = calculate_fs(vel_m, e, f_static, precv, precx, precy, prect);
