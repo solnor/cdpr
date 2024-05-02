@@ -78,7 +78,7 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			(bool)(ceil(abs(velp(1)))),
 			(bool)(ceil(abs(velp(2)))),
 			(bool)(ceil(abs(velp(3))));
-	std::cout << "velp" << std::endl;
+	std::cout << "velp" << velp << std::endl;
 	velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
 			sgn(vels(2))*velp(2),
@@ -266,7 +266,7 @@ int control_loop() {
 	for (uint8_t i = 0; i < 4; i++) {
 		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL); // TODO: Change to set_all_axis_states()
 		Sleep(10);
-		test(i) = 0.3*(-1)*motor_signs(i);
+		test(i) = 0.2*(-1)*motor_signs(i);
 		set_motor_torque(handles[i], test(i)); // TODO: Change to set_all_motor_torques()
 		
 	}
@@ -279,6 +279,13 @@ int control_loop() {
 	//		else
 	//          return
 	//if (is_number(input)) {
+	std::cout << "Setting home position" << std::endl;
+	for (uint8_t i = 0; i < 4; i++) {
+		set_encoder_position(handles[i], 0.0);
+		Sleep(10);
+	}
+	std::cout << "Set home position?" << std::endl;
+	std::cin >> input;
 	std::cout << "Setting home position" << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
 		set_encoder_position(handles[i], 0.0);
