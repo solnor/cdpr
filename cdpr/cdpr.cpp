@@ -180,14 +180,14 @@ int control_loop() {
 							 0.0820 * 1 / r_d,
 							 0.1040 * 1 / r_d,
 							 0.0780 * 1 / r_d);
-	//Eigen::Vector4d f_loss(2.195,
-	//					   2.295,
-	//					   2.245,
-	//					   2.245);
-	Eigen::Vector4d f_loss(6.195,
+	Eigen::Vector4d f_loss(2.195,
 						   2.295,
 						   2.245,
-						   6.245);
+						   2.245);
+	//Eigen::Vector4d f_loss(6.195,
+	//					   2.295,
+	//					   2.245,
+	//					   6.245);
 	//Eigen::Vector4d f_loss(2.195,
 	//					   -1,
 	//					   -1,
@@ -312,6 +312,7 @@ int control_loop() {
 		wd << Kp * e + Ki * eint;
 		we << AT * f_loss;
 		wd << 0, 0, 0;
+		wd << wd + we;
 		//wd << wd + AT * f_loss;
 
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
