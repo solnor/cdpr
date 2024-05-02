@@ -62,6 +62,16 @@ template <typename T> int sgn(T val) {
 	return (T(0) < val) - (val < T(0));
 }
 
+double map(double x, double in_min, double in_max, double out_min, double out_max) {
+	if (x < in_min) {
+		return out_min;
+	} else if (x > in_max) {
+		return out_max;
+	} else {
+		return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+	}
+}
+
 Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& vels,
 									 double precv,
 									 double precx,
@@ -69,15 +79,19 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 									 double prect) {
 	Eigen::Vector4d velp;
 
-	velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
+	/*velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
 			std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
 			std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
-			std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+			std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);*/
 
-	velp << (bool)(ceil(abs(velp(0)))),
+	/*velp << (bool)(ceil(abs(velp(0)))),
 			(bool)(ceil(abs(velp(1)))),
 			(bool)(ceil(abs(velp(2)))),
-			(bool)(ceil(abs(velp(3))));
+			(bool)(ceil(abs(velp(3))));*/
+	velp << map(abs(vels(0)), 0.05, 0.3, 0, 1),
+			map(abs(vels(1)), 0.05, 0.3, 0, 1),
+			map(abs(vels(2)), 0.05, 0.3, 0, 1),
+			map(abs(vels(3)), 0.05, 0.3, 0, 1);
 	std::cout << "velp" << velp << std::endl;
 	velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
@@ -225,7 +239,7 @@ int control_loop() {
 	Eigen::Vector3d e_t      = Eigen::Vector3d::Zero();
 	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
 	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
-	double precv = 0;
+	double precv = 2;
 	double precx = 3;
 	double precy = 3;
 	double prect = 0;
@@ -465,7 +479,7 @@ int main()
 	double precy = 3;
 	double prect = 0;
 	std::cout << "fs:\n"<< calculate_fs(vels, er, f_static, precv, precx, precy, prect) << std::endl;
-
+	std::cout << map(11, 0, 10, 0, 1) << std::endl;
 	bool move_on = 0;
 	while (!move_on) {
 		std::cout << "Select procedure (1-9):" << std::endl;
