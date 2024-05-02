@@ -288,6 +288,7 @@ int control_loop() {
 
 		vel_m << vel.cwiseProduct(motor_signs);
 		l << l0 + pos.cwiseProduct(r_p*motor_signs);
+		std::cout << "pos: \n" << pos << std::endl;
 
 		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
 			   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
