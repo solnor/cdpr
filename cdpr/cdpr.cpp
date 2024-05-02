@@ -295,10 +295,10 @@ int control_loop() {
 			   l(3) - sqrt( sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
 
 		q = forward_kinematics(a, b, 
-							   fk_init_estimate(a, b, l), 
+							   fk_init_estimate(a, b, lfk), 
 							   lfk, r_p);
 		invkin = inverse_kinematics(a, b, q, r_p);
-
+		
 		auto t_loop = std::chrono::high_resolution_clock::now();
 		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
 		qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
@@ -314,7 +314,8 @@ int control_loop() {
 		
 		std::cout << "wd: \n" << wd << std::endl;
 		std::cout << "q: \n" << q << std::endl;
-		//std::cout << "l: \n" << l << std::endl;
+		std::cout << "l: \n" << l << std::endl;
+		std::cout << "lfk: \n" << lfk << std::endl;
 		//std::cout << "wd: \n" << wd << std::endl;
 		//std::cout << "AT: \n" << AT << std::endl;
 
