@@ -1,5 +1,4 @@
-﻿  cdpr.cpp
-c:\users\sølve\source\repos\cdpr\cdpr\algorithms.h(52): warning C4091: 'typedef ': ignored on left of 'force_alloc_res' when no variable is declared
+﻿  commands.cpp
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(23): warning C4091: 'typedef ': ignored on left of 'ODriveGpioMode' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(32): warning C4091: 'typedef ': ignored on left of 'ODriveStreamProtocolType' when no variable is declared
 c:\users\sølve\source\repos\cdpr\cdpr\odrive_definitions.h(49): warning C4091: 'typedef ': ignored on left of 'axis_states' when no variable is declared
