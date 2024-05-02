@@ -317,10 +317,10 @@ int control_loop() {
 
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		
-		std::cout << "wd: \n" << wd << std::endl;
+		std::cout << "we: \n" << wd << std::endl;
 		std::cout << "q: \n" << q << std::endl;
-		std::cout << "l: \n" << l << std::endl;
-		std::cout << "lfk: \n" << lfk << std::endl;
+		/*std::cout << "l: \n" << l << std::endl;
+		std::cout << "lfk: \n" << lfk << std::endl;*/
 		//std::cout << "wd: \n" << wd << std::endl;
 		//std::cout << "AT: \n" << AT << std::endl;
 
@@ -341,12 +341,12 @@ int control_loop() {
 		f0 << 0, 0, 0, 0;
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
 
-		std::cout << "f_pinv: \n" << f_pinv << std::endl;
+		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
 		std::cout << "f: \n" << fres.f << std::endl;
 		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
-		std::cout << "f0: \n" << f0 << std::endl;
-		std::cout << "A^T(f+f0): \n" << AT * (fres.f+f0) << std::endl;
+		//std::cout << "f0: \n" << f0 << std::endl;
+		//std::cout << "A^T(f+f0): \n" << AT * (fres.f+f0) << std::endl;
 		//std::cout << "fs: \n" << fs << std::endl;
 		//std::cout << "T: \n" << T << std::endl;
 		
