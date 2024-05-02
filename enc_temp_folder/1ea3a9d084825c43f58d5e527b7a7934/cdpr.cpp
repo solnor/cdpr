@@ -198,7 +198,7 @@ int control_loop() {
 	Eigen::Vector4d pos;
 	Eigen::Vector4d pos_rad;
 	Eigen::Vector4d vel;
-	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
+	Eigen::Vector4d fvel;
 	Eigen::Vector4d vel_m;
 	Eigen::Vector4d l;
 	Eigen::Vector4d l0(1.2260, 
@@ -379,7 +379,6 @@ int control_loop() {
 		std::cout << "we: \n" << wd << std::endl;
 		std::cout << "q: \n" << q << std::endl;
 		std::cout << "vel: \n" << vel << std::endl;
-		std::cout << "vel_m: \n" << vel_m << std::endl;
 		std::cout << "fvel: \n" << fvel << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
 		/*std::cout << "l: \n" << l << std::endl;
