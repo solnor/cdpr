@@ -19,10 +19,6 @@ int find_driver_errors(HANDLE handles, odrive_state *state) {
 	return 1;
 }
 
-
-
-
-
 std::string to_string(double x, uint8_t prec)
 {
 	std::ostringstream ss;
@@ -37,6 +33,28 @@ int set_axis_state(HANDLE handle, axis_states ax_state) {
 	strncpy_s(c, sizeof(c), cstr.c_str(), sizeof(cstr));
 	//std::cout << c << std::endl;
 	com_write_ln(handle, c);
+	return 1;
+}
+
+int set_all_axis_states(HANDLE handles[], std::vector<axis_states> axis_states) {
+	int r = 0;
+	for (uint8_t i = 0; i < 4; i++) {
+		r = set_axis_state(handles[i], axis_states[i]);
+		if (r = 0) {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+int set_all_axis_states(HANDLE handles[], axis_states axis_state) {
+	int r = 0;
+	for (uint8_t i = 0; i < 4; i++) {
+		r = set_axis_state(handles[i], axis_state);
+		if (r = 0) {
+			return 0;
+		}
+	}
 	return 1;
 }
 
@@ -210,4 +228,23 @@ int check_if_any_driver_errors(HANDLE handles[]) {
 		if (error) break;
 	}
 	return error;
+}
+
+int clear_error(HANDLE handle) {
+	char c[] = "sc \n";
+	com_write_ln(handle, c);
+	return 1;
+}
+
+int clear_errors(HANDLE handles[]) {
+	while (check_if_any_driver_errors(handles)) {
+		int errors[4];
+		read_all_driver_error_statuses(handles, errors);
+		for (uint8_t i = 0; i < 4; i++) {
+			if (errors[i]) {
+				clear_error(handles[i]);
+			}
+		}
+	}
+	return 1;
 }

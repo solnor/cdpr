@@ -24,6 +24,9 @@ int get_all_motor_states(HANDLE handles[], std::vector<motor_state*> motor_state
 
 int set_abs_position(HANDLE handle, double pos);
 int set_axis_state(HANDLE handle, axis_states ax_state);
+int set_all_axis_states(HANDLE handles[], axis_states axis_state);
+int set_all_axis_states(HANDLE handles[], std::vector<axis_states*> axis_states);
+
 int set_encoder_position(HANDLE handle, double position);
 
 int set_motor_torque(HANDLE handle, double torque);
@@ -34,4 +37,7 @@ int read_all_driver_error_statuses(HANDLE handles[], int *errors);
 
 int check_if_driver_error(HANDLE handle);
 int check_if_any_driver_errors(HANDLE handles[]);
+
+int clear_error(HANDLE handle);
+int clear_errors(HANDLE handles[]);
 

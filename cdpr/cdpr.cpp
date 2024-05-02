@@ -238,14 +238,20 @@ int control_loop() {
 	std::cin >> input;
 	std::cout << "Setting starting torques" << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
-		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL);
+		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL); // TODO: Change to set_all_axis_states()
 		Sleep(10);
 		test(i) = 0.3*(-1)*motor_signs(i);
-		set_motor_torque(handles[i], test(i));
+		set_motor_torque(handles[i], test(i)); // TODO: Change to set_all_motor_torques()
 		
 	}
 	std::cout << "Set home position?" << std::endl;
-	std::cin >> input;
+	std::cin >> input; // TODO: Change to key presses
+	// while (keypress != y or n)
+	//		keypress = poll keys
+	//		if keypress == y or n
+	//			continue
+	//		else
+	//          return
 	//if (is_number(input)) {
 	std::cout << "Setting home position" << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
@@ -326,6 +332,7 @@ int control_loop() {
 			  sgn(f_pinv(1))*(fs(1) + f_loss(1)),
 			  sgn(f_pinv(2))*(fs(2) + f_loss(2)),
 			  sgn(f_pinv(3))*(fs(3) + f_loss(3));
+		f0 << 0, 0, 0, 0;
 		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
 
 		std::cout << "f_pinv: \n" << f_pinv << std::endl;
@@ -364,19 +371,24 @@ int main()
 	
 	int ret = init_cdpr_params();
 	
-	/*auto start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
+	q << 0, -0.3, 0;
 	inv_res inv_kin = inverse_kinematics(a, b, q, r_p);
-	std::cout << inv_kin.l << std::endl;
+	std::cout << "l:\n" << inv_kin.l << std::endl;
+	std::cout << "betar:\n" << inv_kin.betar << std::endl;
+	inv_kin.l << inv_kin.l + (inv_kin.betar - 0.15194*Eigen::Vector4d::Ones())*r_p;
+	std::cout << "l:\n" << inv_kin.l << std::endl;
 	Eigen::Vector3d q0 = fk_init_estimate(a, b, inv_kin.l);
+	std::cout << "q0:\n" << q0 << std::endl;
 	Eigen::Vector3d qe = forward_kinematics(a, b, q0, inv_kin.l, r_p);
 	std::cout << "qe" << std::endl;
 	std::cout << qe*pow(10,3) << std::endl;
 	Eigen::MatrixXd AT = calculate_structure_matrix(a, b, qe, inv_kin.betar, r_p);
 	std::cout << AT << std::endl;
 
-	double f_min = 5;
-	double f_max = 60;
-	double f_ref = 25;
+	double f_min = 15;
+	double f_max = 80;
+	double f_ref = (f_max + f_min) / 2;;
 	Eigen::Vector4d f_prev = f_ref*Eigen::Vector4d::Ones();
 	Eigen::Vector3d w_c(0, 0, 0);
 	force_alloc_res fares;
@@ -384,10 +396,10 @@ int main()
 	std::cout << "force allocation: \n" << fares.f << std::endl;
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-	std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;*/
+	std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
 
-	std::string input;
-	std::cin >> input;
+	/*std::string input;
+	std::cin >> input;*/
 	/*if (is_number(input)) {
 		std::cout << "Oke" << std::endl;
 	}*/
@@ -406,7 +418,25 @@ int main()
 	double prect = 0;
 	std::cout << "fs:\n"<< calculate_fs(vels, er, f_static, precv, precx, precy, prect) << std::endl;
 
+	bool move_on = 0;
+	while (!move_on) {
+		std::cout << "Select procedure (1-9):" << std::endl;
+		std::cout << "1) Move platform with arrow keys" << std::endl;
+		std::cout << "2) Set tension" << std::endl;
+		std::cout << "3) Set home position" << std::endl;
+		std::cout << "4) Clear errors" << std::endl;
+		std::cout << "5) Run control loop" << std::endl;
+		std::cout << "6) Enable enable_dc_bus_voltage_feedback on all ODrives" << std::endl;
 
+		std::string input;
+		std::cin >> input;
+		// TODO: Check user input and run functions
+		// Make function for moving platform with arrow keys
+		// Make function for setting tension
+		// Make function for setting home position
+		// Make function for setting enable_dc_bus_voltage_feedback
+		move_on = 1;
+	}
 	control_loop();
 
 

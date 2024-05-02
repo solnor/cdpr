@@ -242,10 +242,10 @@ Eigen::Vector4d fk_nusq(const Eigen::Ref<const Eigen::MatrixXd>& a_i,
 }
 
 Eigen::Vector3d forward_kinematics(const Eigen::Ref<const Eigen::MatrixXd>& a_i,
-	const Eigen::Ref<const Eigen::MatrixXd>& b_b,
-	const Eigen::Ref<const Eigen::Vector3d>& q0,
-	const Eigen::Ref<const Eigen::Vector4d>& ln,
-	double r_p) {
+								   const Eigen::Ref<const Eigen::MatrixXd>& b_b,
+								   const Eigen::Ref<const Eigen::Vector3d>& q0,
+								   const Eigen::Ref<const Eigen::Vector4d>& ln,
+								   double r_p) {
 
 
 	Eigen::Vector3d qi = q0;
@@ -258,15 +258,15 @@ Eigen::Vector3d forward_kinematics(const Eigen::Ref<const Eigen::MatrixXd>& a_i,
 	Eigen::Vector3d g = J.transpose()*phi;
 
 	// MarLev position estimation constants
-	double tau = 1 * pow(10, -6);
-	double epsilon1 = 1 * pow(10, -17);
-	double epsilon2 = 1 * pow(10, -17);
-	double xi = 2;
-	double mu = tau * A.diagonal().maxCoeff();
+	double tau      = 1*pow(10, -6);
+	double epsilon1 = 1*pow(10, -17);
+	double epsilon2 = 1*pow(10, -17);
+	double xi       = 2;
+	double mu       = tau*A.diagonal().maxCoeff();
 	//std::cout << mu << std::endl;
 
 	int iter = 0;
-	int maxiter = 2;
+	int maxiter = 100;
 
 	Eigen::Matrix3d eye3 = Eigen::Matrix3d::Identity();
 	Eigen::Matrix3d tmp;
