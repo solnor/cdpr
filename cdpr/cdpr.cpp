@@ -293,10 +293,10 @@ int control_loop() {
 		std::cout << "pos: \n" << pos << std::endl;
 		std::cout << "pos_rad: \n" << pos_rad << std::endl;
 
-		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
-			   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
-			   l(2) - sqrt( sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // total cable length
-			   l(3) - sqrt( sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
+		lfk << l(0) - sqrt( sqrt( pow(pos_rad(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
+			   l(1) - sqrt( sqrt( pow(pos_rad(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
+			   l(2) - sqrt( sqrt( pow(pos_rad(2)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // total cable length
+			   l(3) - sqrt( sqrt( pow(pos_rad(3)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)); // to get length used in FK
 
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
