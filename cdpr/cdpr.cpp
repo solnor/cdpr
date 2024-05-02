@@ -94,7 +94,7 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			map(abs(vels(1)), in_min, in_max, 0, 1),
 			map(abs(vels(2)), in_min, in_max, 0, 1),
 			map(abs(vels(3)), in_min, in_max, 0, 1);
-	std::cout << "velp" << velp << std::endl;
+	std::cout << "velp:\n" << velp << std::endl;
 	velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
 			sgn(vels(2))*velp(2),
@@ -379,6 +379,7 @@ int control_loop() {
 		std::cout << "we: \n" << wd << std::endl;
 		std::cout << "q: \n" << q << std::endl;
 		std::cout << "vel: \n" << vel << std::endl;
+		std::cout << "fvel: \n" << fvel << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
 		/*std::cout << "l: \n" << l << std::endl;
 		std::cout << "lfk: \n" << lfk << std::endl;*/
