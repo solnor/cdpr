@@ -79,18 +79,18 @@ Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 	//std::cout << (bool)(ceil(abs(velp(1)))) << std::endl;
 	//std::cout << (1 & (bool)(ceil(abs(velp(1))))) << std::endl;
 	//std::cout << !(1 & (bool)(ceil(abs(velp(1))))) << std::endl;
-	std::cout << "velp trunc: \n" << velp << std::endl;
+	//std::cout << "velp trunc: \n" << velp << std::endl;
 	velp << !(1 & (bool)(ceil(abs(velp(0))))),
 			!(1 & (bool)(ceil(abs(velp(1))))),
 			!(1 & (bool)(ceil(abs(velp(2))))),
 			!(1 & (bool)(ceil(abs(velp(3)))));
-	std::cout << "velp bool: \n" << velp << std::endl;
+	//std::cout << "velp bool: \n" << velp << std::endl;
 	
 	Eigen::Vector3d ep;
 	ep << std::trunc(e(0)*pow(10, precx)) / pow(10, precx),
 		  std::trunc(e(1)*pow(10, precy)) / pow(10, precy),
 		  std::trunc(e(2)*pow(10, prect)) / pow(10, prect);
-	std::cout << "ep: \n" << ep << std::endl;
+	//std::cout << "ep: \n" << ep << std::endl;
 
 	/*Eigen::Vector4d dir(sgn(f_pinv(0)), 
 						sgn(f_pinv(1)), 
@@ -290,8 +290,8 @@ int control_loop() {
 
 		vel_m << vel.cwiseProduct(motor_signs);
 		l << l0 + pos_rad.cwiseProduct(r_d*motor_signs);
-		std::cout << "pos: \n" << pos << std::endl;
-		std::cout << "pos_rad: \n" << pos_rad << std::endl;
+		//std::cout << "pos: \n" << pos << std::endl;
+		//std::cout << "pos_rad: \n" << pos_rad << std::endl;
 
 		lfk << l(0) - sqrt( pow(sqrt( pow(pos_rad(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)), // Subtract length between
 			   l(1) - sqrt( pow(sqrt( pow(pos_rad(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)), // drum and pulley from
@@ -310,7 +310,13 @@ int control_loop() {
 		e  << qd - q;
 		e << 0,0,0;
 		wd << Kp * e + Ki * eint;
-		we << AT * f_loss;
+		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
+		f_pinv = AT_pinv * we;
+		f0 << sgn(f_pinv(0))*f_loss(0),
+			  sgn(f_pinv(1))*f_loss(1),
+			  sgn(f_pinv(2))*f_loss(2),
+			  sgn(f_pinv(3))*f_loss(3);
+		we << AT * f0;
 		wd << 0, 0, 0;
 		wd << wd + we;
 		//wd << wd + AT * f_loss;
@@ -326,8 +332,7 @@ int control_loop() {
 
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 
-		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
-		f_pinv = AT_pinv * we;
+		
 		fs = calculate_fs(vel_m, e, f_static, precv, precx, precy, prect);
 		fs << 0, 0, 0, 0;
 		/*e_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
