@@ -155,6 +155,7 @@ int control_loop() {
 	motor_states.push_back(&ms3);
 
 	Eigen::Vector4d pos;
+	Eigen::Vector4d pos_rad;
 	Eigen::Vector4d vel;
 	Eigen::Vector4d vel_m;
 	Eigen::Vector4d l;
@@ -280,6 +281,7 @@ int control_loop() {
 			   ms1.pos,	
 			   ms2.pos,
 			   ms3.pos;
+		pos_rad << pos * 2*PI;
 
 		vel << ms0.vel,
 			   ms1.vel,	
@@ -287,8 +289,9 @@ int control_loop() {
 			   ms3.vel;
 
 		vel_m << vel.cwiseProduct(motor_signs);
-		l << l0 + pos.cwiseProduct(r_p*motor_signs);
+		l << l0 + pos_rad.cwiseProduct(r_p*motor_signs);
 		std::cout << "pos: \n" << pos << std::endl;
+		std::cout << "pos_rad: \n" << pos_rad << std::endl;
 
 		lfk << l(0) - sqrt( sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // Subtract length between
 			   l(1) - sqrt( sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ) + pow(xdiff,2)), // drum and pulley from
