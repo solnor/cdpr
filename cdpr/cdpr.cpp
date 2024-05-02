@@ -88,10 +88,12 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			(bool)(ceil(abs(velp(1)))),
 			(bool)(ceil(abs(velp(2)))),
 			(bool)(ceil(abs(velp(3))));*/
-	velp << map(abs(vels(0)), 0.05, 0.3, 0, 1),
-			map(abs(vels(1)), 0.05, 0.3, 0, 1),
-			map(abs(vels(2)), 0.05, 0.3, 0, 1),
-			map(abs(vels(3)), 0.05, 0.3, 0, 1);
+	double in_min = 0.1;
+	double in_max = 0.6;
+	velp << map(abs(vels(0)), in_min, in_max, 0, 1),
+			map(abs(vels(1)), in_min, in_max, 0, 1),
+			map(abs(vels(2)), in_min, in_max, 0, 1),
+			map(abs(vels(3)), in_min, in_max, 0, 1);
 	std::cout << "velp" << velp << std::endl;
 	velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
