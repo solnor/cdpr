@@ -70,9 +70,9 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 	Eigen::Vector4d velp;
 
 	velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+			std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
+			std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
+			std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
 
 	velp << !(1 & (bool)(ceil(abs(velp(0))))),
 			!(1 & (bool)(ceil(abs(velp(1))))),
@@ -225,7 +225,7 @@ int control_loop() {
 	Eigen::Vector3d e_t      = Eigen::Vector3d::Zero();
 	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
 	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
-	double precv = 1;
+	double precv = 0;
 	double precx = 3;
 	double precy = 3;
 	double prect = 0;
@@ -336,7 +336,7 @@ int control_loop() {
 		e << 0,0,0;
 		wd << Kp * e + Ki * eint;
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
-		f_pinv = AT_pinv * we;
+		//f_pinv = AT_pinv * we;
 		/*f0 << sgn(f_pinv(0))*f_loss(0),
 			  sgn(f_pinv(1))*f_loss(1),
 			  sgn(f_pinv(2))*f_loss(2),
@@ -352,6 +352,7 @@ int control_loop() {
 		
 		std::cout << "we: \n" << wd << std::endl;
 		std::cout << "q: \n" << q << std::endl;
+		std::cout << "f0: \n" << f0 << std::endl;
 		/*std::cout << "l: \n" << l << std::endl;
 		std::cout << "lfk: \n" << lfk << std::endl;*/
 		//std::cout << "wd: \n" << wd << std::endl;
@@ -366,12 +367,12 @@ int control_loop() {
 			   std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
 			   std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
 			   std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);*/
-		f0 << sgn(f_pinv(0))*(fs(0) + f_loss(0)),
+		/*f0 << sgn(f_pinv(0))*(fs(0) + f_loss(0)),
 			  sgn(f_pinv(1))*(fs(1) + f_loss(1)),
 			  sgn(f_pinv(2))*(fs(2) + f_loss(2)),
 			  sgn(f_pinv(3))*(fs(3) + f_loss(3));
-		f0 << 0, 0, 0, 0;
-		T = (fres.f + f0).cwiseProduct(r_d*(-1)*motor_signs);
+		f0 << 0, 0, 0, 0;*/
+		T = (fres.f).cwiseProduct(r_d*(-1)*motor_signs);
 
 		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
 		std::cout << "f: \n" << fres.f << std::endl;
