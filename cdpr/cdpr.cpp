@@ -223,7 +223,7 @@ int control_loop() {
 							 0.1040 * 1 / r_d,
 							 0.0780 * 1 / r_d);
 	Eigen::Vector4d f_loss(2.195,
-						   2.295,
+						   1.895,
 						   2.245,
 						   1.845);
 	//Eigen::Vector4d f_loss(6.195,
@@ -377,10 +377,10 @@ int control_loop() {
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		
 		//std::cout << "we: \n" << wd << std::endl;
-		//std::cout << "q: \n" << q << std::endl;
+		std::cout << "q: \n" << q << std::endl;
 		//std::cout << "vel: \n" << vel << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
-		std::cout << "fvel: \n" << fvel << std::endl;
+		//std::cout << "fvel: \n" << fvel << std::endl;
 		//std::cout << "f0: \n" << f0 << std::endl;
 
 		/*std::cout << "l: \n" << l << std::endl;
