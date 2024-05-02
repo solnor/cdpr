@@ -289,7 +289,7 @@ int control_loop() {
 			   ms3.vel;
 
 		vel_m << vel.cwiseProduct(motor_signs);
-		l << l0 + pos_rad.cwiseProduct(r_p*motor_signs);
+		l << l0 + pos_rad.cwiseProduct(r_d*motor_signs);
 		std::cout << "pos: \n" << pos << std::endl;
 		std::cout << "pos_rad: \n" << pos_rad << std::endl;
 
