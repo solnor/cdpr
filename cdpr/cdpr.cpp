@@ -198,6 +198,7 @@ int control_loop() {
 	Eigen::Vector4d pos;
 	Eigen::Vector4d pos_rad;
 	Eigen::Vector4d vel;
+	Eigen::Vector4d fvel;
 	Eigen::Vector4d vel_m;
 	Eigen::Vector4d l;
 	Eigen::Vector4d l0(1.2260, 
@@ -364,7 +365,8 @@ int control_loop() {
 			  sgn(f_pinv(1))*f_loss(1),
 			  sgn(f_pinv(2))*f_loss(2),
 			  sgn(f_pinv(3))*f_loss(3);*/
-		Eigen::Vector4d flossdir = calculate_f_loss_dir(vel, precv, precx, precy, prect);
+		fvel << 0.9*fvel + 0.1*vel;
+		Eigen::Vector4d flossdir = calculate_f_loss_dir(fvel, precv, precx, precy, prect);
 		f0 << flossdir.cwiseProduct(motor_signs);
 		f0 << f0.cwiseProduct(f_loss);
 		we << AT * f0;
