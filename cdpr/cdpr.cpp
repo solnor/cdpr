@@ -62,6 +62,31 @@ template <typename T> int sgn(T val) {
 	return (T(0) < val) - (val < T(0));
 }
 
+Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& vels,
+									 double precv,
+									 double precx,
+									 double precy,
+									 double prect) {
+	Eigen::Vector4d velp;
+
+	velp << std::trunc(vels(0)*pow(10, precv)) / pow(10, precv),
+		std::trunc(vels(1)*pow(10, precv)) / pow(10, precv),
+		std::trunc(vels(2)*pow(10, precv)) / pow(10, precv),
+		std::trunc(vels(3)*pow(10, precv)) / pow(10, precv);
+
+	velp << !(1 & (bool)(ceil(abs(velp(0))))),
+			!(1 & (bool)(ceil(abs(velp(1))))),
+			!(1 & (bool)(ceil(abs(velp(2))))),
+			!(1 & (bool)(ceil(abs(velp(3)))));
+
+	velp << sgn(vels(0))*velp(0),
+			sgn(vels(1))*velp(1),
+			sgn(vels(2))*velp(2),
+			sgn(vels(3))*velp(3);
+	
+	return velp;
+}
+
 Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 							 const Eigen::Ref<const Eigen::Vector3d>& e,
 							 const Eigen::Ref<const Eigen::Vector4d>& f_static,
@@ -312,10 +337,12 @@ int control_loop() {
 		wd << Kp * e + Ki * eint;
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
 		f_pinv = AT_pinv * we;
-		f0 << sgn(f_pinv(0))*f_loss(0),
+		/*f0 << sgn(f_pinv(0))*f_loss(0),
 			  sgn(f_pinv(1))*f_loss(1),
 			  sgn(f_pinv(2))*f_loss(2),
-			  sgn(f_pinv(3))*f_loss(3);
+			  sgn(f_pinv(3))*f_loss(3);*/
+		Eigen::Vector4d flossdir = calculate_f_loss_dir(vel, precv, precx, precy, prect);
+		f0 << flossdir.cwiseProduct(motor_signs);
 		we << AT * f0;
 		wd << 0, 0, 0;
 		wd << wd + we;
