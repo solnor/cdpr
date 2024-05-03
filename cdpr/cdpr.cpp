@@ -113,7 +113,7 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			(bool)(ceil(abs(velp(2)))),
 			(bool)(ceil(abs(velp(3))));*/
 	double in_min = 1.0;
-	double in_max = 2.5;
+	double in_max = 7.0;
 	velp << map(abs(vels(0)), in_min, in_max, 0, 1),
 			map(abs(vels(1)), in_min, in_max, 0, 1),
 			map(abs(vels(2)), in_min, in_max, 0, 1),
@@ -123,8 +123,8 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			sgn(vels(1))*mapped_vel_norm,
 			sgn(vels(2))*mapped_vel_norm,
 			sgn(vels(3))*mapped_vel_norm;
-	std::cout << "veln: " << veln << std::endl;
-	std::cout << "velp:\n" << velp << std::endl;
+	//std::cout << "veln: " << veln << std::endl;
+	//std::cout << "velp:\n" << velp << std::endl;
 
 	/*velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
@@ -228,9 +228,12 @@ int control_loop() {
 	Eigen::Vector4d pos;
 	Eigen::Vector4d pos_rad;
 	Eigen::Vector4d vel;
+	Eigen::Vector4d vel_rad;
 	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
 	Eigen::Vector4d vel_m;
+	Eigen::Vector4d vel_m_rad;
 	Eigen::Vector4d l;
+	Eigen::Vector4d ldot;
 	Eigen::Vector4d l0(1.2260, 
 		               1.1833,
 		               1.1833, 
@@ -241,6 +244,7 @@ int control_loop() {
 
 	Eigen::MatrixXd AT      = Eigen::MatrixXd::Zero(3, 4);
 	Eigen::MatrixXd AT_pinv = Eigen::MatrixXd::Zero(3, 4);
+	Eigen::MatrixXd A_pinv  = Eigen::MatrixXd::Zero(3, 4);
 
 	double f_min = 15;
 	double f_max = 80;
@@ -278,6 +282,7 @@ int control_loop() {
 	double prect = 0;
 
 	Eigen::Vector3d q = Eigen::Vector3d::Zero();
+	Eigen::Vector3d qdot = Eigen::Vector3d::Zero();
 	Eigen::Vector3d qd;
 	Eigen::Vector3d e;
 	Eigen::Vector3d wd;
@@ -395,9 +400,11 @@ int control_loop() {
 			   ms1.vel,	
 			   ms2.vel,
 			   ms3.vel;
-
+		vel_rad << vel * 2 * PI;
 		vel_m << vel.cwiseProduct(motor_signs);
+		vel_m_rad << vel_rad.cwiseProduct(motor_signs);
 		l << l0 + pos_rad.cwiseProduct(r_d*motor_signs);
+		ldot << r_d*vel_m_rad;
 		//std::cout << "pos: \n" << pos << std::endl;
 		//std::cout << "pos_rad: \n" << pos_rad << std::endl;
 
@@ -418,6 +425,7 @@ int control_loop() {
 		e  << qd - q;
 		e << 0,0,0;
 		wd << Kp * e + Ki * eint;
+		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
 		//f_pinv = AT_pinv * we;
 		/*f0 << sgn(f_pinv(0))*f_loss(0),
@@ -430,17 +438,18 @@ int control_loop() {
 		f0 << f0.cwiseProduct(f_loss);
 		we << AT * f0;
 		wd << 0, 0, 0;
-		wd << wd + we;
+		//wd << wd + we;
 		//wd << wd + AT * f_loss;
-
-		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
+		A_pinv = (-1*AT).transpose().completeOrthogonalDecomposition().pseudoInverse();
+		qdot << A_pinv * ldot;
 		
 		//std::cout << "we: \n" << wd << std::endl;
-		std::cout << "q: \n" << q << std::endl;
+		//std::cout << "q: \n" << q << std::endl;
+		std::cout << "qdot: \n" << qdot << std::endl;
 		//std::cout << "vel: \n" << vel << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
 		//std::cout << "fvel: \n" << fvel << std::endl;
-		std::cout << "f0: \n" << f0 << std::endl;
+		//std::cout << "f0: \n" << f0 << std::endl;
 
 		/*std::cout << "l: \n" << l << std::endl;
 		std::cout << "lfk: \n" << lfk << std::endl;*/
