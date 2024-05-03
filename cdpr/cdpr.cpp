@@ -555,6 +555,10 @@ int main()
 	std::cout << "fs:\n"<< calculate_fs(vels, er, f_static, precv, precx, precy, prect) << std::endl;
 	std::cout << map(11, 0, 10, 0, 1) << std::endl;
 	bool move_on = 0;
+	std::string input;
+	std::cin >> input;
+	com_init(handles, odrv_ports);
+
 	while (!move_on) {
 		std::cout << "Select procedure (1-8):" << std::endl;
 		std::cout << "1) Move platform with arrow keys" << std::endl;
@@ -579,17 +583,17 @@ int main()
 			case 1:
 				break;
 			case 2:
-				com_init(handles, odrv_ports);
+				//com_init(handles, odrv_ports);
 				set_standard_tension(handles);
 				break;
 			case 3:
-				com_init(handles, odrv_ports);
+				//com_init(handles, odrv_ports);
 
 				double positions[4];
 				set_all_encoder_positions(handles, positions);
 				break;
 			case 4:
-				com_init(handles, odrv_ports);
+				//com_init(handles, odrv_ports);
 				clear_errors(handles);
 				break;
 			case 5:
@@ -597,7 +601,7 @@ int main()
 				control_loop();
 				break;
 			case 6:
-				com_init(handles, odrv_ports);
+				//com_init(handles, odrv_ports);
 				enable_all_brake_resistor_voltage_feedback(handles);
 				break;
 			case 7:
