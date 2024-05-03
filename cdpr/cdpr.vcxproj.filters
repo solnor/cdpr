@@ -33,6 +33,9 @@
     <ClInclude Include="odrive_definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="controllers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cdpr.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="communication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="controllers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

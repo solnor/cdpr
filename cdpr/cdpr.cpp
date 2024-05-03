@@ -6,6 +6,7 @@
 #include "algorithms.h"
 #include "commands.h"
 #include "odrive_definitions.h"
+#include "controllers.h"
 #include <Dense>
 #include <QR>
 #include <cstdlib>
@@ -516,6 +517,20 @@ int control_loop() {
 }
 
 int testt() {
+	auto start = std::chrono::high_resolution_clock::now();
+	double T = 0;
+	while (1) {
+		auto t_now = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_now - start);
+		T = std::chrono::duration<double>(duration).count();
+		//std::cout << "T: " << T << std::endl;
+		if (T >= 0.015) break;
+
+	}
+	auto t_now = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t_now - start);
+	std::cout << "T: " << T << std::endl;
+	std::cout << duration.count() << std::endl;
 	std::cout << "Testt running" << std::endl;
 	return 0;
 }
@@ -586,7 +601,8 @@ int main()
 		std::cout << "5) Run control loop" << std::endl;
 		std::cout << "6) Enable enable_dc_bus_voltage_feedback on all ODrives" << std::endl;
 		std::cout << "7) testt" << std::endl;
-		std::cout << "8) Exit" << std::endl;
+		std::cout << "8) Run control loop" << std::endl;
+		std::cout << "9) Exit" << std::endl;
 
 		std::string input;
 		std::cin >> input;
@@ -626,6 +642,9 @@ int main()
 				testt();
 				break;
 			case 8:
+				tension_control_loop(handles);
+				break;
+			case 9:
 				move_on = 1;
 				break;
 			default:

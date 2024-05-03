@@ -167,6 +167,7 @@
     <ClInclude Include="cdpr_params.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="communication.h" />
+    <ClInclude Include="controllers.h" />
     <ClInclude Include="odrive_definitions.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
@@ -175,6 +176,7 @@
     <ClCompile Include="cdpr.cpp" />
     <ClCompile Include="commands.cpp" />
     <ClCompile Include="communication.cpp" />
+    <ClCompile Include="controllers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
