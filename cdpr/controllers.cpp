@@ -7,6 +7,11 @@ typedef struct {
 	double p;
 } enc_positions;
 
+// https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+template <typename T> int sgn(T val) {
+	return (T(0) < val) - (val < T(0));
+}
+
 Eigen::Vector4d get_positions_with_offset(const Eigen::Ref<const Eigen::Vector4d>& p_enc, 
 										  const Eigen::Ref<const Eigen::Vector4d>& p0) {
 	Eigen::Vector4d pos = Eigen::Vector4d::Zero();
@@ -14,10 +19,22 @@ Eigen::Vector4d get_positions_with_offset(const Eigen::Ref<const Eigen::Vector4d
 		   (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1),
 		   (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2),
 		   (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
-	pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
+	/*pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
 	pos(1) = (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1);
 	pos(2) = (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2);
-	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);
+	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
+	/*pos(0) = sgn(p_enc(0))*(abs(p_enc(0)) - abs(p0(0)));
+	pos(1) = sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1)));
+	pos(2) = sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2)));
+	pos(3) = sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));*/
+	pos << sgn(p_enc(0))*(abs(p_enc(0)) - abs(p0(0))),
+		   sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1))),
+		   sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2))),
+		   sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));
+	/*pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
+	pos(1) = (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1);
+	pos(2) = (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2);
+	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
 	return pos;
 }
 
@@ -72,7 +89,9 @@ int run_initial_prompts(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d
 	
 	std::cout << "Setting home position" << std::endl;
 	double positions[4];
-	set_all_encoder_positions(handles, positions);
+	//set_all_encoder_positions(handles, positions);
+	get_all_motor_states(handles, motor_states);
+
 	std::cout << "Set home position?" << std::endl;
 	r = 0;
 	while (!(r == 3)) {
@@ -188,9 +207,17 @@ int tension_control_loop(HANDLE handles[]) {
 	Eigen::Vector3d eint = Eigen::Vector3d::Zero();
 	int key_pressed = 0;
 
-	if (!(run_initial_prompts(handles, motor_signs, motor_states))) {
+	/*if (!(run_initial_prompts(handles, motor_signs, motor_states))) {
 		return 0;
-	}
+	}*/
+
+	std::string input;
+	std::cin >> input;
+	get_all_motor_states(handles, motor_states);
+	p0 << ms0.pos,
+		  ms1.pos,
+		  ms2.pos,
+		  ms3.pos;
 	
 	bool running = 1;
 	bool any_error = 0;
@@ -205,11 +232,12 @@ int tension_control_loop(HANDLE handles[]) {
 		// Read motor velocities and positions from motor drivers
 		// and update variables
 		get_all_motor_states(handles, motor_states);
-		pos << ms0.pos,
-			   ms1.pos,
-			   ms2.pos,
-			   ms3.pos;
-
+		pos_enc << ms0.pos,
+				   ms1.pos,
+				   ms2.pos,
+			       ms3.pos;
+		pos = get_positions_with_offset(pos_enc, p0);
+		std::cout << "pos: \n" << pos << std::endl;
 		vel << ms0.vel,
 			   ms1.vel,
 			   ms2.vel,
@@ -232,6 +260,7 @@ int tension_control_loop(HANDLE handles[]) {
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
 							   lfk, r_p);
+		std::cout << "q: \n" << q << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
@@ -243,7 +272,7 @@ int tension_control_loop(HANDLE handles[]) {
 
 		// Convert tensions to torque and set the torque on each motor
 		T = (fres.f).cwiseProduct(r_d*(-1)*motor_signs);
-		set_all_motor_torques(handles, T);
+		//set_all_motor_torques(handles, T);
 
 		if (!fres.flag) {
 			f_prev = fres.f;
@@ -261,7 +290,6 @@ int tension_control_loop(HANDLE handles[]) {
 int position_control_loop(HANDLE handles[]) {
 	return 1;
 }
-
 
 int pos_test(HANDLE handles[]) {
 	motor_state ms0, ms1, ms2, ms3;
