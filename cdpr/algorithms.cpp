@@ -572,7 +572,7 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 	// Newtons method on the KKT conditions
 	// Initialization
 	int iter    = 0;    // Initializing iteration counter
-	int itermax = 50;  // Maximum iterations
+	int itermax = 100;  // Maximum iterations
 
 	Eigen::Vector4d f = f_prev;                  // Initial force
 	double f0 = f_ref;                           // Reference force
