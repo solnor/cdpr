@@ -492,6 +492,10 @@ int control_loop() {
 			set_motor_torque(handles[i], T(i));
 		}*/
 
+		if (!fres.flag) {
+			f_prev = fres.f;
+		}
+
 		set_all_motor_torques(handles, T);
 
 		//std::cout << "f: \n" << fres.f << std::endl;

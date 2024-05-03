@@ -666,10 +666,10 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 	//std::cout << "FA: z: \n" << z << std::endl;
 	//std::cout << "FA: res.f: \n" << res.f << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
-		if (res.f(i) < 0) {
+		if (res.f(i) < f_min) {
 			res.f = f_prev;
 			res.flag = 1;
-			std::cout << "FA: Forces below zero. Setting forces equal to previous ones." << std::endl;
+			std::cout << "FA: Forces below f_min. Setting forces equal to previous ones." << std::endl;
 			break;
 		}
 	}
