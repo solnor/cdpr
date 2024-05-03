@@ -42,26 +42,29 @@ int com_init(HANDLE handles[n_odrv], LPCSTR odrv_ports[n_odrv]) {
 
 int com_read_ln(HANDLE handle, char* c) {
 	LPDWORD n = 0;
+	int r = 0;
 	int i = 0;
 	while (1) {
-		ReadFile(handle, &c[i], 1, n, NULL);
-		/*if (!r) {
+		r = ReadFile(handle, &c[i], 1, n, NULL);
+		if (!r) {
 			std::cout << "Failed to read line.\n" << std::endl;
-		}*/
+			return 0;
+		}
 		if (c[i] == 0x0a) {
 			break;
 		}
 		i++;
 	}
-	return (int)n;
+	return 1;
 }
 
 int com_write_ln(HANDLE handle, char c[]) {
 	LPDWORD n = 0;
-	WriteFile(handle, c, strlen(c), n, NULL);
-	/*if (!r) {
+	int r = 0;
+	r = WriteFile(handle, c, strlen(c), n, NULL);
+	if (!r) {
 		std::cout << "Failed to write line.\n" << std::endl;
-	}*/
+	}
 	//FlushFileBuffers(handle);
 	return (int)n;
 }

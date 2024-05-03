@@ -28,6 +28,7 @@ int set_all_axis_states(HANDLE handles[], axis_states axis_state);
 int set_all_axis_states(HANDLE handles[], std::vector<axis_states*> axis_states);
 
 int set_encoder_position(HANDLE handle, double position);
+int set_all_encoder_positions(HANDLE handles[], double positions[]);
 
 int set_motor_torque(HANDLE handle, double torque);
 int set_all_motor_torques(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d>& torques);
@@ -40,4 +41,7 @@ int check_if_any_driver_errors(HANDLE handles[]);
 
 int clear_error(HANDLE handle);
 int clear_errors(HANDLE handles[]);
+
+int enable_brake_resistor_voltage_feedback(HANDLE handle);
+int enable_all_brake_resistor_voltage_feedback(HANDLE handles[]);
 

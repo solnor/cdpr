@@ -34,14 +34,43 @@ int init_cdpr_params() {
 	return 0;
 }
 
+int set_standard_tension(HANDLE handles[]) {
+	set_all_axis_states(handles, AXIS_STATE_CLOSED_LOOP_CONTROL);
+	Eigen::Vector4d torques = -0.2*Eigen::Vector4d::Ones().cwiseProduct(motor_signs);
+	set_all_motor_torques(handles, torques);
+	//for (uint8_t i = 0; i < 4; i++) {
+	//	set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL); // TODO: Change to set_all_axis_states()
+	//	Sleep(10);
+	//	test(i) = 0.2*(-1)*motor_signs(i);
+	//	set_motor_torque(handles[i], test(i)); // TODO: Change to set_all_motor_torques()
+
+	//}
+	return 1;
+}
+
 int poll_keys() {
-	if (GetKeyState('A') & 0x8000)
-	{
+	//auto t_now = std::chrono::high_resolution_clock::now();
+	if (GetAsyncKeyState('A') & 0x8000) {
 		std::cout << "Pressing A" << std::endl;
+		return 1;
 	}
-	if (GetKeyState('Q') & 0x8000)
-	{
+	if (GetAsyncKeyState('Q') & 0x8000) {
 		running = 0;
+		return 2;
+	}
+	if (GetAsyncKeyState('Y') & 0x8000) {
+		/*static auto t_press = std::chrono::high_resolution_clock::now();
+		auto t_diff = std::chrono::duration_cast<std::chrono::seconds>(t_press - t_now);
+		auto t_diff_d = std::chrono::duration<double>(t_diff).count();*/
+		//if (t_diff_d > 1.0) {
+		return 3;
+		//}
+	}
+	if (GetAsyncKeyState('N') & 0x8000) {
+		return 4;
+	}
+	if (GetAsyncKeyState(0x25) & 0x8000) { // Left arrow key
+		return 5;
 	}
 	return 0;
 }
@@ -274,21 +303,36 @@ int control_loop() {
 
 	Eigen::Vector4d test = Eigen::Vector4d::Zero();
 
-	com_init(handles, odrv_ports);
-
-	std::cout << "Set starting torques?" << std::endl;
-	std::string input;
-	std::cin >> input;
+	std::cout << "Set starting torques? (y/n)" << std::endl;
+	int r = 0;
+	while (!(r == 3))
+	{
+		r = poll_keys();
+		if (r == 4) return 0;
+		//std::cout << r << std::endl;
+	}
+	Sleep(250);
+	
 	std::cout << "Setting starting torques" << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
-		set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL); // TODO: Change to set_all_axis_states()
+		//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL); // TODO: Change to set_all_axis_states()
 		Sleep(10);
 		test(i) = 0.2*(-1)*motor_signs(i);
-		set_motor_torque(handles[i], test(i)); // TODO: Change to set_all_motor_torques()
+		//set_motor_torque(handles[i], test(i)); // TODO: Change to set_all_motor_torques()
 		
 	}
+	std::string input;
+	//std::cin >> input;
 	std::cout << "Set home position?" << std::endl;
-	std::cin >> input; // TODO: Change to key presses
+	r = 0;
+	while (!(r == 3))
+	{
+		r = poll_keys();
+		if (r == 4) return 0;
+		//std::cout << r << std::endl;
+	}
+	Sleep(250);
+	//std::cin >> input; // TODO: Change to key presses
 	// while (keypress != y or n)
 	//		keypress = poll keys
 	//		if keypress == y or n
@@ -302,7 +346,14 @@ int control_loop() {
 		Sleep(10);
 	}
 	std::cout << "Set home position?" << std::endl;
-	std::cin >> input;
+	//std::cin >> input;
+	r = 0;
+	while (!(r == 3))
+	{
+		r = poll_keys();
+		if (r == 4) return 0;
+	}
+	Sleep(250);
 	std::cout << "Setting home position" << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
 		set_encoder_position(handles[i], 0.0);
@@ -313,7 +364,13 @@ int control_loop() {
 	get_all_motor_states(handles, motor_states);
 	std::cout << "Motor positions: " << ms0.pos << ", " << ms1.pos << ", " << ms2.pos << ", " << ms3.pos << std::endl;
 	std::cout << "Start control loop?" << std::endl;
-	std::cin >> input;
+	r = 0;
+	while (!(r == 3))
+	{
+		r = poll_keys();
+		if (r == 4) return 0;
+	}
+	Sleep(250);
 	std::cout << "Running" << std::endl;
 	auto start_loop = std::chrono::high_resolution_clock::now();
 	while (running) {
@@ -440,6 +497,11 @@ int control_loop() {
 	return 1;
 }
 
+int testt() {
+	std::cout << "Testt running" << std::endl;
+	return 0;
+}
+
 int main()
 {
 	
@@ -494,24 +556,63 @@ int main()
 	std::cout << map(11, 0, 10, 0, 1) << std::endl;
 	bool move_on = 0;
 	while (!move_on) {
-		std::cout << "Select procedure (1-9):" << std::endl;
+		std::cout << "Select procedure (1-8):" << std::endl;
 		std::cout << "1) Move platform with arrow keys" << std::endl;
 		std::cout << "2) Set tension" << std::endl;
 		std::cout << "3) Set home position" << std::endl;
 		std::cout << "4) Clear errors" << std::endl;
 		std::cout << "5) Run control loop" << std::endl;
 		std::cout << "6) Enable enable_dc_bus_voltage_feedback on all ODrives" << std::endl;
+		std::cout << "7) testt" << std::endl;
+		std::cout << "8) Exit" << std::endl;
 
 		std::string input;
 		std::cin >> input;
-		// TODO: Check user input and run functions
+		// TODO:
 		// Make function for moving platform with arrow keys
-		// Make function for setting tension
-		// Make function for setting home position
-		// Make function for setting enable_dc_bus_voltage_feedback
-		move_on = 1;
+		// Verify function for setting tension
+		// Verify function for setting home position
+		// Verify function for setting enable_dc_bus_voltage_feedback
+		if (is_number(input)) {
+			int inputi = stoi(input);
+			switch (inputi) {
+			case 1:
+				break;
+			case 2:
+				com_init(handles, odrv_ports);
+				set_standard_tension(handles);
+				break;
+			case 3:
+				com_init(handles, odrv_ports);
+
+				double positions[4];
+				set_all_encoder_positions(handles, positions);
+				break;
+			case 4:
+				com_init(handles, odrv_ports);
+				clear_errors(handles);
+				break;
+			case 5:
+				//com_init(handles, odrv_ports);
+				control_loop();
+				break;
+			case 6:
+				com_init(handles, odrv_ports);
+				enable_all_brake_resistor_voltage_feedback(handles);
+				break;
+			case 7:
+				testt();
+				break;
+			case 8:
+				move_on = 1;
+				break;
+			default:
+				break;
+			}
+		}
+
 	}
-	control_loop();
+	//control_loop();
 
 
 	/*std::cout << "Error: " << read_driver_error_status(handles[0]) << std::endl;
