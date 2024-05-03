@@ -444,7 +444,7 @@ int control_loop() {
 		qdot << A_pinv * ldot;
 		
 		//std::cout << "we: \n" << wd << std::endl;
-		//std::cout << "q: \n" << q << std::endl;
+		std::cout << "q: \n" << q << std::endl;
 		std::cout << "qdot: \n" << qdot << std::endl;
 		//std::cout << "vel: \n" << vel << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
