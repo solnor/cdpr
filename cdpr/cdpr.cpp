@@ -36,6 +36,7 @@ int init_cdpr_params() {
 
 int set_standard_tension(HANDLE handles[]) {
 	set_all_axis_states(handles, AXIS_STATE_CLOSED_LOOP_CONTROL);
+	Sleep(10);
 	Eigen::Vector4d torques = -0.2*motor_signs;
 	set_all_motor_torques(handles, torques);
 	return 1;
@@ -111,18 +112,19 @@ Eigen::Vector4d calculate_f_loss_dir(const Eigen::Ref<const Eigen::Vector4d>& ve
 			(bool)(ceil(abs(velp(1)))),
 			(bool)(ceil(abs(velp(2)))),
 			(bool)(ceil(abs(velp(3))));*/
-	double in_min = 0.2;
+	double in_min = 0.5;
 	double in_max = 1.5;
 	velp << map(abs(vels(0)), in_min, in_max, 0, 1),
 			map(abs(vels(1)), in_min, in_max, 0, 1),
 			map(abs(vels(2)), in_min, in_max, 0, 1),
 			map(abs(vels(3)), in_min, in_max, 0, 1);
 	double mapped_vel_norm = map(veln, in_min, in_max, 0, 1);
-	//std::cout << "velp:\n" << velp << std::endl;
 	velp << sgn(vels(0))*mapped_vel_norm,
 			sgn(vels(1))*mapped_vel_norm,
 			sgn(vels(2))*mapped_vel_norm,
 			sgn(vels(3))*mapped_vel_norm;
+	std::cout << "veln: " << veln << std::endl;
+	std::cout << "velp:\n" << velp << std::endl;
 
 	/*velp << sgn(vels(0))*velp(0),
 			sgn(vels(1))*velp(1),
@@ -438,7 +440,7 @@ int control_loop() {
 		//std::cout << "vel: \n" << vel << std::endl;
 		//std::cout << "vel_m: \n" << vel_m << std::endl;
 		//std::cout << "fvel: \n" << fvel << std::endl;
-		//std::cout << "f0: \n" << f0 << std::endl;
+		std::cout << "f0: \n" << f0 << std::endl;
 
 		/*std::cout << "l: \n" << l << std::endl;
 		std::cout << "lfk: \n" << lfk << std::endl;*/
