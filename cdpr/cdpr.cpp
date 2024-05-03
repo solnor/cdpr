@@ -378,6 +378,7 @@ int control_loop() {
 		any_error = check_if_any_driver_errors(handles);
 		if (any_error) { 
 			running = 0;
+			std::cout << "Breaking" << std::endl;
 			break;
 		};
 
@@ -492,6 +493,7 @@ int control_loop() {
 		read_all_driver_error_statuses(handles, errors);
 		std::cout << "Setting all torques to zero" << std::endl;
 	} else {
+		std::cout << "Setting standard torque" << std::endl;
 		set_all_motor_torques(handles, (0.3*Eigen::Vector4d::Ones()).cwiseProduct((-1)*motor_signs));
 	}
 	return 1;

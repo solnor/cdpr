@@ -71,7 +71,7 @@ int set_encoder_position(HANDLE handle, double position) {
 
 int set_all_encoder_positions(HANDLE handles[], double positions[]) {
 	for (uint8_t i = 0; i < 4; i++) {
-		set_encoder_position(handles, positions[i]);
+		set_encoder_position(handles[i], positions[i]);
 	}
 	return 1;
 }
