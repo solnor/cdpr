@@ -603,6 +603,7 @@ int main()
 		std::cout << "7) testt" << std::endl;
 		std::cout << "8) Run control loop" << std::endl;
 		std::cout << "9) Exit" << std::endl;
+		std::cout << "10) Test pos" << std::endl;
 
 		std::string input;
 		std::cin >> input;
@@ -639,13 +640,17 @@ int main()
 				enable_all_brake_resistor_voltage_feedback(handles);
 				break;
 			case 7:
-				testt();
+				//testt();
+				pos_test(handles);
 				break;
 			case 8:
 				tension_control_loop(handles);
 				break;
 			case 9:
 				move_on = 1;
+				break;
+			case 10:
+				pos_test(handles);
 				break;
 			default:
 				break;

@@ -1,6 +1,26 @@
 #include "controllers.h"
 #include <iostream>
 
+typedef struct {
+	double p0;
+	double p_enc;
+	double p;
+} enc_positions;
+
+Eigen::Vector4d get_positions_with_offset(const Eigen::Ref<const Eigen::Vector4d>& p_enc, 
+										  const Eigen::Ref<const Eigen::Vector4d>& p0) {
+	Eigen::Vector4d pos = Eigen::Vector4d::Zero();
+	/*pos << (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0),
+		   (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1),
+		   (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2),
+		   (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
+	pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
+	pos(1) = (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1);
+	pos(2) = (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2);
+	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);
+	return pos;
+}
+
 int set_standard_tension(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d>& motor_signs) {
 	set_all_axis_states(handles, AXIS_STATE_CLOSED_LOOP_CONTROL);
 	Sleep(10);
@@ -65,10 +85,10 @@ int run_initial_prompts(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d
 
 	//}
 	get_all_motor_states(handles, motor_states);
-	std::cout << "Motor positions: " << &motor_states[0]->pos \
-							 << ", " << &motor_states[1]->pos \
-							 << ", " << &motor_states[2]->pos \
-							 << ", " << &motor_states[3]->pos \
+	std::cout << "Motor positions: " << (*motor_states[0]).pos \
+							 << ", " << (*motor_states[1]).pos \
+							 << ", " << (*motor_states[2]).pos \
+							 << ", " << (*motor_states[3]).pos \
 							 << std::endl;
 	std::cout << "Start control loop?" << std::endl;
 	r = 0;
@@ -109,7 +129,7 @@ int tension_control_loop(HANDLE handles[]) {
 	motor_states.push_back(&ms2);
 	motor_states.push_back(&ms3);
 
-	Eigen::Vector4d pos, pos_rad;
+	Eigen::Vector4d pos_enc, pos, p0, pos_rad;
 	//Eigen::Vector4d ;
 	Eigen::Vector4d vel, vel_rad;
 	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
@@ -240,4 +260,33 @@ int tension_control_loop(HANDLE handles[]) {
 
 int position_control_loop(HANDLE handles[]) {
 	return 1;
+}
+
+
+int pos_test(HANDLE handles[]) {
+	motor_state ms0, ms1, ms2, ms3;
+	std::vector<motor_state*> motor_states;
+	motor_states.push_back(&ms0);
+	motor_states.push_back(&ms1);
+	motor_states.push_back(&ms2);
+	motor_states.push_back(&ms3);
+
+	Eigen::Vector4d pos_enc, pos, p0, pos_rad;
+	std::string input;
+	std::cin >> input;
+	get_all_motor_states(handles, motor_states);
+	p0 << ms0.pos,
+		  ms1.pos,
+		  ms2.pos,
+		  ms3.pos;
+
+	while (1) {
+		get_all_motor_states(handles, motor_states);
+		pos_enc << ms0.pos,
+				   ms1.pos,
+				   ms2.pos,
+				   ms3.pos;
+		pos = get_positions_with_offset(pos_enc, p0);
+		std::cout << "pos: \n" << pos << std::endl;
+	}
 }

@@ -5,3 +5,4 @@
 
 int tension_control_loop(HANDLE handles[]);
 int position_control_loop(HANDLE handles[]);
+int pos_test(HANDLE handles[]);
