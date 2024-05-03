@@ -252,10 +252,10 @@ int tension_control_loop(HANDLE handles[]) {
 		ldot << r_d * vel_m_rad;
 
 		// Subtract length between drum and pulley from total cable length to get length used in FK
-		lfk << l(0) - sqrt( pow(sqrt( pow(pos_rad(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(1) - sqrt( pow(sqrt( pow(pos_rad(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(2) - sqrt( pow(sqrt( pow(pos_rad(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(3) - sqrt( pow(sqrt( pow(pos_rad(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));
+		lfk << l(0) - sqrt( pow(sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
+			   l(1) - sqrt( pow(sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
+			   l(2) - sqrt( pow(sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
+			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));
 
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
