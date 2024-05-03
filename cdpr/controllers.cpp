@@ -256,7 +256,7 @@ int tension_control_loop(HANDLE handles[]) {
 			   l(1) - sqrt( pow(sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(2) - sqrt( pow(sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));
-
+		std::cout << "lfk: \n" << lfk << std::endl;
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
 							   lfk, r_p);
