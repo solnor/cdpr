@@ -27,14 +27,18 @@ Eigen::Vector4d get_positions_with_offset(const Eigen::Ref<const Eigen::Vector4d
 	pos(1) = sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1)));
 	pos(2) = sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2)));
 	pos(3) = sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));*/
-	pos << sgn(p_enc(0))*(abs(p_enc(0)) - abs(p0(0))),
-		   sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1))),
-		   sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2))),
-		   sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));
+	//pos << sgn(p_enc(0))*(abs(p_enc(0)) - abs(p0(0))),
+	//	   sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1))),
+	//	   sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2))),
+	//	   sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));
 	/*pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
 	pos(1) = (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1);
 	pos(2) = (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2);
 	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
+	pos << p_enc(0) - p0(0),
+		   p_enc(1) - p0(1),
+		   p_enc(2) - p0(2),
+		   p_enc(3) - p0(3);
 	return pos;
 }
 
@@ -256,7 +260,7 @@ int tension_control_loop(HANDLE handles[]) {
 			   l(1) - sqrt( pow(sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(2) - sqrt( pow(sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));
-		std::cout << "lfk: \n" << lfk << std::endl;
+		//std::cout << "lfk: \n" << lfk << std::endl;
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
 							   lfk, r_p);
