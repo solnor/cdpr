@@ -262,7 +262,7 @@ int enable_brake_resistor_voltage_feedback(HANDLE handle) {
 	int nominal_voltage = 24;
 	int ramp_start = nominal_voltage + 2;
 	int ramp_end = nominal_voltage + 6;
-	char c1[] = "w config.brake_resistor0.enable_dc_bus_voltage_feedback 1";
+	char c1[] = "w config.brake_resistor0.enable_dc_bus_voltage_feedback 1 \n";
 
 	char c2[200];
 	std::string c2str = "w config.brake_resistor0.dc_bus_voltage_feedback_ramp_start " + std::to_string(ramp_start) + "\n";

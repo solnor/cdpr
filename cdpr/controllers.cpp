@@ -167,7 +167,7 @@ Eigen::Vector4d calculate_fs2(const Eigen::Ref<const Eigen::Vector4d>& vels,
 	return fs;
 }
 
-int tension_control_loop(HANDLE handles[]) {
+int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d>& p0_in) {
 
 	double mm2m = (double)pow(10, -3);
 	double r_d = 20*mm2m;
@@ -177,8 +177,10 @@ int tension_control_loop(HANDLE handles[]) {
 	double xdiff = 56.40783 * mm2m;
 	
 	Eigen::MatrixXd a(2, 4);
-	a << -0.7560, -0.7560, 0.7560, 0.7560,
-		 -0.4181, 0.4181, 0.4181, -0.4181;
+	/*a << -0.7560, -0.7560, 0.7560, 0.7560,
+		 -0.4181, 0.4181, 0.4181, -0.4181;*/
+	a << -0.7490, -0.7490, 0.7530,  0.7530,
+	     -0.4041,  0.4321, 0.4321, -0.4041;
 	// Trapezoidal b
 	Eigen::MatrixXd b(2, 4);
 	b << -0.0250, -0.0750, 0.0750, 0.0250,
@@ -197,6 +199,9 @@ int tension_control_loop(HANDLE handles[]) {
 	motor_states.push_back(&ms3);
 
 	Eigen::Vector4d pos_enc, pos, p0, pos_rad;
+	if (p0_in.any()) {
+		p0 << p0_in;
+	}
 	//Eigen::Vector4d ;
 	Eigen::Vector4d vel, vel_rad;
 	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
@@ -206,10 +211,18 @@ int tension_control_loop(HANDLE handles[]) {
 	//				   1.1833,
 	//				   1.1833,
 	//				   1.2260);
-	Eigen::Vector4d l0(1.2060,
-					   1.1820,
-					   1.1820,
-					   1.2060);
+	//Eigen::Vector4d l0(1.2060,
+	//				   1.1820,
+	//				   1.1820,
+	//				   1.2060);
+	Eigen::Vector4d l0(1.1962, 
+					   1.1723, 
+					   1.1736, 
+					   1.2017);
+	Eigen::Vector3d lde2pe(0.3597,
+						   0.3636,
+						   0.3617,
+						   0.3617);
 	inv_res invkin;
 
 	Eigen::MatrixXd AT, AT_pinv, A_pinv = Eigen::MatrixXd::Zero(3, 4);
@@ -296,7 +309,7 @@ int tension_control_loop(HANDLE handles[]) {
 		   2.90906,
 		   1.20864,
 		  -3.02383;*/
-	p0 << -1.25022,
+	/*p0 << -1.25022,
 		   2.91746,
 		   1.20932,
 		  -3.03257;
@@ -307,7 +320,7 @@ int tension_control_loop(HANDLE handles[]) {
 	p0 << -1.18695,
 		   3.00702,
 		   1.2469,
-		  -3.03695;
+		  -3.03695;*/
 	std::cout << "p0: \n" << p0 << std::endl;
 
 	bool running = 1;
@@ -344,10 +357,14 @@ int tension_control_loop(HANDLE handles[]) {
 		ldot << r_d * vel_m_rad;
 
 		// Subtract length between drum and pulley from total cable length to get length used in FK
-		lfk << l(0) - sqrt( pow(sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
+		/*lfk << l(0) - sqrt( pow(sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(1) - sqrt( pow(sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(2) - sqrt( pow(sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));
+			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));*/
+		lfk << l(0) - sqrt( pow(pos(0) * pitch_drum, 2) + pow(lde2pe(0), 2)),
+			   l(0) - sqrt( pow(pos(1) * pitch_drum, 2) + pow(lde2pe(1), 2)),
+			   l(0) - sqrt( pow(pos(2) * pitch_drum, 2) + pow(lde2pe(2), 2)),
+			   l(0) - sqrt( pow(pos(3) * pitch_drum, 2) + pow(lde2pe(3), 2));
 		//std::cout << "lfk: \n" << lfk << std::endl;
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
@@ -370,7 +387,7 @@ int tension_control_loop(HANDLE handles[]) {
 		qd << 0.1, 0, 0;
 		e << qd - q;
 		wd << Kp * e;
-		wd << -1.0, 0.0, 0.0;
+		wd << 0.0, 0.0, 0.0;
 		e << 1.0, 1.0, 1.0;
 		//std::cout << "vel: \n" << vel << std::endl;
 		qdot = A_pinv * ldot;
@@ -389,12 +406,12 @@ int tension_control_loop(HANDLE handles[]) {
 			  sgn(f_pinv(2))*(fs(2)),
 			  sgn(f_pinv(3))*(fs(3));
 		//std::cout << "wd: \n" << wd << std::endl;
-		wd << wd + AT * f0;
+		//wd << wd + AT * f0;
 		//wd << wd + Eigen::Vector3d(5, 2.2, 0);
 		//f_pinv << AT_pinv * Eigen::Vector3d(5, 2.2, 0);
 		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
 		std::cout << "f0: \n" << f0 << std::endl;
-		std::cout << "wd+w0: \n" << wd << std::endl;
+		//std::cout << "wd+w0: \n" << wd << std::endl;
 
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 		//fres.f = f_ref * Eigen::Vector4d::Ones() - AT_pinv * (wd + AT * f_ref * Eigen::Vector4d::Ones());
