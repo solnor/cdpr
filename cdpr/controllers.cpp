@@ -1,6 +1,8 @@
 #include "controllers.h"
 #include <iostream>
 #include <chrono>
+#include <fstream>
+#include <iterator>
 
 typedef struct {
 	double p0;
@@ -167,6 +169,46 @@ Eigen::Vector4d calculate_fs2(const Eigen::Ref<const Eigen::Vector4d>& vels,
 	return fs;
 }
 
+Eigen::Vector4d calculate_fs3(const Eigen::Ref<const Eigen::Vector4d>& vels,
+							  const Eigen::Ref<const Eigen::Vector3d>& e,
+							  const Eigen::Ref<const Eigen::Vector4d>& f_static,
+							  double precv,
+							  double precx,
+							  double precy,
+							  double prect) {
+	Eigen::Vector4d velp;
+
+	velp << std::trunc(vels(0) * pow(10, precv)) / pow(10, precv),
+		std::trunc(vels(1) * pow(10, precv)) / pow(10, precv),
+		std::trunc(vels(2) * pow(10, precv)) / pow(10, precv),
+		std::trunc(vels(3) * pow(10, precv)) / pow(10, precv);
+	//std::cout << "4&1: " << (1 & (bool)4) << std::endl;
+	//std::cout << (bool)(ceil(abs(velp(1)))) << std::endl;
+	//std::cout << (1 & (bool)(ceil(abs(velp(1))))) << std::endl;
+	//std::cout << !(1 & (bool)(ceil(abs(velp(1))))) << std::endl;
+	//std::cout << "velp trunc: \n" << velp << std::endl;
+	velp << !(1 & (bool)(ceil(abs(velp(0))))),
+		!(1 & (bool)(ceil(abs(velp(1))))),
+		!(1 & (bool)(ceil(abs(velp(2))))),
+		!(1 & (bool)(ceil(abs(velp(3)))));
+	//std::cout << "velp bool: \n" << velp << std::endl;
+
+	Eigen::Vector3d ep;
+	ep << std::trunc(e(0) * pow(10, precx)) / pow(10, precx),
+		std::trunc(e(1) * pow(10, precy)) / pow(10, precy),
+		std::trunc(e(2) * pow(10, prect)) / pow(10, prect);
+	//std::cout << "ep: \n" << ep << std::endl;
+
+	/*Eigen::Vector4d dir(sgn(f_pinv(0)),
+						sgn(f_pinv(1)),
+						sgn(f_pinv(2)),
+						sgn(f_pinv(3)));*/
+	Eigen::Vector4d fs;
+	//fs << (int)f_pinvp.any()*velp.cwiseProduct(dir.cwiseProduct(f_static));
+	fs << (int)ep.any() * velp.cwiseProduct(f_static);
+	return fs;
+}
+
 int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d>& p0_in) {
 
 	double mm2m = (double)pow(10, -3);
@@ -198,10 +240,21 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	motor_states.push_back(&ms2);
 	motor_states.push_back(&ms3);
 
+
+	std::vector<Eigen::Vector3d> q_log;
+	std::vector<Eigen::Vector3d> qd_log;
+	std::vector<Eigen::Vector3d> wd_log;
+	std::vector<Eigen::Vector3d> wa_log;
+	std::vector<Eigen::Vector3d> eint_log;
+	std::vector<Eigen::Vector3d> wint_log;
+	std::vector<Eigen::Vector4d> vel_log;
+	std::vector<Eigen::Vector4d> fvel_log;
+	std::vector<Eigen::Vector4d> f_log;
+	std::vector<Eigen::Vector4d> t0_log;
+	std::vector<double> t_log;
+
 	Eigen::Vector4d pos_enc, pos, p0, pos_rad;
-	if (p0_in.any()) {
-		p0 << p0_in;
-	}
+	
 	//Eigen::Vector4d ;
 	Eigen::Vector4d vel, vel_rad;
 	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
@@ -219,7 +272,7 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 					   1.1723, 
 					   1.1736, 
 					   1.2017);
-	Eigen::Vector3d lde2pe(0.3597,
+	Eigen::Vector4d lde2pe(0.3597,
 						   0.3636,
 						   0.3617,
 						   0.3617);
@@ -230,7 +283,7 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	//Eigen::MatrixXd A_pinv  = Eigen::MatrixXd::Zero(3, 4);
 
 	double f_min = 10;
-	double f_max = 60;
+	double f_max = 80;
 	double f_ref = (f_max + f_min) / 2;
 	Eigen::Vector4d f_prev = f_ref*Eigen::Vector4d::Ones();
 	force_alloc_res fres;
@@ -259,7 +312,9 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 							 3.5862874,
 							 6.7821798,
 							 3.52063746);
-		
+	//Eigen::Vector4d t_static(0.056, 0.0504, 0.0498, 0.0354);
+	//Eigen::Vector4d t_static(0.03, 0.03, 0.03, 0.03);
+	Eigen::Vector4d t_static(0.04, 0.04, 0.03, 0.03);
 		
 	Eigen::Vector4d f_loss(2.195,
 						   1.995,
@@ -269,28 +324,38 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	Eigen::Vector4d f_pinv = Eigen::Vector4d::Zero();
 	Eigen::Vector3d e_t = Eigen::Vector3d::Zero();
 	Eigen::Vector4d fs = Eigen::Vector4d::Zero();
+	Eigen::Vector4d ts = Eigen::Vector4d::Zero();
 	Eigen::Vector4d f0 = Eigen::Vector4d::Zero();
+	Eigen::Vector4d t0 = Eigen::Vector4d::Zero();
 	double precv = 2;
 	double precx = 3;
 	double precy = 3;
 	double prect = 0;
 
 	Eigen::Vector3d q, qdot = Eigen::Vector3d::Zero();
-	Eigen::Vector3d qd;
-	Eigen::Vector3d e;
-	Eigen::Vector3d wd, we, w0;
+	Eigen::Vector3d qd, qddot = Eigen::Vector3d::Zero();
+	double omega = 2.5;
+	Eigen::Vector3d e, edot, eint = Eigen::Vector3d::Zero();
+	double dt = 15*pow(10,-3);
+	Eigen::Vector3d wd, we, wa, w0, wint = Eigen::Vector3d::Zero();
+	Eigen::Vector3d intlimit(6, 6, 0.1);
 	Eigen::Vector4d T = Eigen::Vector4d::Zero();
 
 	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
-	Kp(0, 0) = 125; // Proportional gain x
-	Kp(1, 1) = 125; // Proportional gain y
+	Kp(0, 0) = 225; // Proportional gain x
+	Kp(1, 1) = 150; // Proportional gain y
 	Kp(2, 2) = 5;   // Proportional gain theta
 
 	Eigen::Matrix3d Ki = Eigen::Matrix3d::Zero();
-	Ki(0, 0) = 0; // Integral gain x
-	Ki(1, 1) = 0; // Integral gain y
+	Ki(0, 0) = 425; // Integral gain x
+	Ki(1, 1) = 125; // Integral gain y
 	Ki(2, 2) = 0; // Integral gain theta
-	Eigen::Vector3d eint = Eigen::Vector3d::Zero();
+
+	Eigen::Matrix3d Kd = Eigen::Matrix3d::Zero();
+	Kd(0, 0) = 11;  // Derivative gain x
+	Kd(1, 1) = 19;  // Derivative gain y
+	Kd(2, 2) = 0;  // Derivative gain theta
+	//Eigen::Vector3d eint = Eigen::Vector3d::Zero();
 	int key_pressed = 0;
 
 	/*if (!(run_initial_prompts(handles, motor_signs, motor_states))) {
@@ -300,15 +365,21 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	std::string input;
 	std::cin >> input;
 	get_all_motor_states(handles, motor_states);
-	p0 << ms0.pos,
-		  ms1.pos,
-		  ms2.pos,
-		  ms3.pos;
+	if (p0_in.any()) {
+		p0 << p0_in;
+		std::cout << "p0_in: \n" << p0_in << std::endl;
+	} else {
+		p0 << ms0.pos,
+			  ms1.pos,
+			  ms2.pos,
+			  ms3.pos;
+	}
+	/*p0 << -0.3085,
+		  -0.0683,
+		   0.2052,
+		  -0.0371;*/
 	std::cout << "p0: \n" << p0 << std::endl;
-	/*p0 << -1.30595,
-		   2.90906,
-		   1.20864,
-		  -3.02383;*/
+	
 	/*p0 << -1.25022,
 		   2.91746,
 		   1.20932,
@@ -323,9 +394,13 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		  -3.03695;*/
 	std::cout << "p0: \n" << p0 << std::endl;
 
+	double t_since_start_c = 0;
+	double loop_period = 0;
+
+
 	bool running = 1;
 	bool any_error = 0;
-	auto start = std::chrono::high_resolution_clock::now();
+	auto t_start = std::chrono::high_resolution_clock::now();
 	while (running) {
 		any_error = check_if_any_driver_errors(handles);
 		if (any_error) {
@@ -333,6 +408,9 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 			std::cout << "Breaking" << std::endl;
 			break;
 		};
+
+		auto t_loop_start = std::chrono::high_resolution_clock::now();
+		auto t_since_start = std::chrono::duration_cast<std::chrono::milliseconds>(t_loop_start - t_start);
 
 		// Read motor velocities and positions from motor drivers
 		// and update variables
@@ -342,14 +420,14 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 				   ms2.pos,
 			       ms3.pos;
 		pos = get_positions_with_offset(pos_enc, p0);
+		pos_rad << pos * 2 * PI;
 		//std::cout << "pos: \n" << pos << std::endl;
 		vel << ms0.vel,
 			   ms1.vel,
 			   ms2.vel,
 			   ms3.vel;
-		pos_rad << pos * 2 * PI;
+		fvel = 0.5*fvel + 0.5*vel;
 		vel_rad << vel * 2 * PI;
-
 		vel_m << vel.cwiseProduct(motor_signs);
 		vel_m_rad << vel_rad.cwiseProduct(motor_signs);
 
@@ -361,75 +439,186 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 			   l(1) - sqrt( pow(sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(2) - sqrt( pow(sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
 			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));*/
-		lfk << l(0) - sqrt( pow(pos(0) * pitch_drum, 2) + pow(lde2pe(0), 2)),
-			   l(0) - sqrt( pow(pos(1) * pitch_drum, 2) + pow(lde2pe(1), 2)),
-			   l(0) - sqrt( pow(pos(2) * pitch_drum, 2) + pow(lde2pe(2), 2)),
-			   l(0) - sqrt( pow(pos(3) * pitch_drum, 2) + pow(lde2pe(3), 2));
+		lfk << l(0) - sqrt( pow(pos(0)*pitch_drum, 2) + pow(lde2pe(0), 2)),
+			   l(1) - sqrt( pow(pos(1)*pitch_drum, 2) + pow(lde2pe(1), 2)),
+			   l(2) - sqrt( pow(pos(2)*pitch_drum, 2) + pow(lde2pe(2), 2)),
+			   l(3) - sqrt( pow(pos(3)*pitch_drum, 2) + pow(lde2pe(3), 2));
 		//std::cout << "lfk: \n" << lfk << std::endl;
 		q = forward_kinematics(a, b, 
 							   fk_init_estimate(a, b, lfk), 
 							   lfk, r_p);
 		//q << 0, 0, 0;
-		std::cout << "q: \n" << q << std::endl;
+		//std::cout << "q: \n" << q << std::endl;
+		std::cout << "q: " << q(0)*1000 << ", " << q(1) * 1000 << ", " << q(2)*180/PI << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 
 		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		std::cout << "A^T: \n" << AT << std::endl;
+		//std::cout << "A^T: \n" << AT << std::endl;
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
 		A_pinv = (-1*AT).transpose().completeOrthogonalDecomposition().pseudoInverse();
+		qdot = A_pinv*ldot;
 		
 		//wd << 0, 0, 0;
 
-		auto t_loop = std::chrono::high_resolution_clock::now();
-		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start);
-		//qd << 0.1*cos(2*std::chrono::duration<double>(t_since_start).count()), -0.1, 0;
+		t_since_start_c = std::chrono::duration<double>(t_since_start).count();
+		std::cout << "Time since start: " << t_since_start_c << std::endl;
+		qd << 0.1*cos(omega*t_since_start_c),
+			  0.1*sin(omega* t_since_start_c)-0.2,
+			  0;
+		qddot << -omega*0.1*sin(omega*t_since_start_c),
+			      omega*0.1*cos(omega*t_since_start_c),
+			      0;
 		// * cos(8 * std::chrono::duration<double>(t_since_start).count())
-		qd << 0.1, 0, 0;
+		//qd << 0.1, 0, 0;
 		e << qd - q;
-		wd << Kp * e;
-		wd << 0.0, 0.0, 0.0;
-		e << 1.0, 1.0, 1.0;
+		edot << qddot - qdot;
+		eint += e * dt;
+		wint = Ki * eint;
+		std::cout << "wint: \n" << wint << std::endl;
+		// Saturation limits
+		for (uint8_t j = 0; j < 3; j++) {
+			if (wint(j) > intlimit(j)) {
+				wint(j) = intlimit(j);
+			} else if (wint(j) < -intlimit(j)) {
+				wint(j) = -intlimit(j);
+			}
+		}
+		std::cout << "wint: \n" << wint << std::endl;
+		/*wint(0) = wint(0) > intlimit(0) ? intlimit(0) :
+			                              abs(wint(0)) > intlimit(0) ? intlimit(0) : wint(0);
+		wint(1) = wint(1) > intlimit(1) ? intlimit(1) :
+										  abs(wint(1)) > intlimit(1) ? intlimit(1) : wint(1);
+		wint(2) = wint(2) > intlimit(2) ? intlimit(2) :
+										  abs(wint(2)) > intlimit(2) ? intlimit(2) : wint(2);*/
+		wd << Kp * e + Kd*edot + wint;
+		//wd << 0.0, 0.0, 0.0;
+		//e << 1.0, 1.0, 1.0;
 		//std::cout << "vel: \n" << vel << std::endl;
 		qdot = A_pinv * ldot;
-		std::cout << "qdot: \n" << qdot << std::endl;
-		fs = calculate_fs2(vel, qdot, AT, e, f_static,precv, precx, precy, prect, 2);
-		std::cout << "fs: \n" << fs << std::endl;
+		//std::cout << "qdot: \n" << qdot << std::endl;
+		//fs = calculate_fs2(vel, qdot, AT, e, f_static,precv, precx, precy, prect, 2);
+		//std::cout << "fs: \n" << fs << std::endl;
 
 		f_pinv << AT_pinv * wd;
 		//f0 << sgn(f_pinv(0))*(f_loss(0)+fs(0)),
 		//	  sgn(f_pinv(1))*(f_loss(1)+fs(1)),
 		//	  sgn(f_pinv(2))*(f_loss(2)+fs(2)),
 		//	  sgn(f_pinv(3))*(f_loss(3)+fs(3));
+		ts = calculate_fs3(fvel, e, t_static, precv, precx, precy, prect);
 		fs << f_static;
 		f0 << sgn(f_pinv(0))*(fs(0)),
 			  sgn(f_pinv(1))*(fs(1)),
 			  sgn(f_pinv(2))*(fs(2)),
 			  sgn(f_pinv(3))*(fs(3));
+		t0 << sgn(f_pinv(0))*(ts(0)),
+			  sgn(f_pinv(1))*(ts(1)),
+			  sgn(f_pinv(2))*(ts(2)),
+			  sgn(f_pinv(3))*(ts(3));
+		std::cout << "t0: \n" << t0 << std::endl;
 		//std::cout << "wd: \n" << wd << std::endl;
 		//wd << wd + AT * f0;
 		//wd << wd + Eigen::Vector3d(5, 2.2, 0);
 		//f_pinv << AT_pinv * Eigen::Vector3d(5, 2.2, 0);
 		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
-		std::cout << "f0: \n" << f0 << std::endl;
-		//std::cout << "wd+w0: \n" << wd << std::endl;
+		//std::cout << "f0: \n" << f0 << std::endl;
+		//std::cout << "wd: \n" << wd << std::endl;
 
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
+		wa << AT * fres.f;
 		//fres.f = f_ref * Eigen::Vector4d::Ones() - AT_pinv * (wd + AT * f_ref * Eigen::Vector4d::Ones());
 		std::cout << "f: \n" << fres.f << std::endl;
 		// Convert tensions to torque and set the torque on each motor
 		T = (fres.f).cwiseProduct(r_d*(-1)*motor_signs);
+		T += t0.cwiseProduct((-1)*motor_signs);
 		set_all_motor_torques(handles, T);
 
 		if (!fres.flag) {
 			f_prev = fres.f;
 		}
 
+		
+		q_log.push_back(q);
+		qd_log.push_back(qd);
+		wd_log.push_back(wd);
+		wa_log.push_back(wa);
+		vel_log.push_back(vel);
+		fvel_log.push_back(fvel);
+		f_log.push_back(fres.f);
+		t0_log.push_back(t0);
+		eint_log.push_back(eint);
+		wint_log.push_back(wint);
+		t_log.push_back(t_since_start_c);
+
 		key_pressed = poll_keys2();
 		if (key_pressed == 2) {
 			break;
 		}
 
+		while (1) {
+			auto t_loop_end = std::chrono::high_resolution_clock::now();
+			auto t_loop = std::chrono::duration_cast<std::chrono::milliseconds>(t_loop_end - t_loop_start);
+			loop_period = std::chrono::duration<double>(t_loop).count();
+			if (loop_period >= 0.015) break;
+		}
+		
 	}
+
+	if (any_error) {
+		set_all_motor_torques(handles, Eigen::Vector4d::Zero());
+		std::cout << "Error encountered" << std::endl;
+		int errors[4];
+		read_all_driver_error_statuses(handles, errors);
+		std::cout << "Setting all torques to zero" << std::endl;
+	}
+	else {
+		std::cout << "Setting standard torque" << std::endl;
+		set_all_motor_torques(handles, (0.3 * Eigen::Vector4d::Ones()).cwiseProduct((-1) * motor_signs));
+	}
+	
+	std::ofstream logfile_q("logs/q.txt");
+	std::copy(q_log.begin(), q_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_q, "\n"));
+	logfile_q.close();
+
+	std::ofstream logfile_qd("logs/qd.txt");
+	std::copy(qd_log.begin(), qd_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_qd, "\n"));
+	logfile_qd.close();
+
+	std::ofstream logfile_t("logs/t.txt");
+	std::copy(t_log.begin(), t_log.end(), std::ostream_iterator<double>(logfile_t, "\n"));
+	logfile_t.close();
+
+	std::ofstream logfile_eint("logs/eint.txt");
+	std::copy(eint_log.begin(), eint_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_eint, "\n"));
+	logfile_eint.close();
+	
+	std::ofstream logfile_wint("logs/wint.txt");
+	std::copy(wint_log.begin(), wint_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_wint, "\n"));
+	logfile_wint.close();
+
+	std::ofstream logfile_wd("logs/wd.txt");
+	std::copy(wd_log.begin(), wd_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_wd, "\n"));
+	logfile_wd.close();
+
+	std::ofstream logfile_wa("logs/wa.txt");
+	std::copy(wa_log.begin(), wa_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_wa, "\n"));
+	logfile_wa.close();
+
+	std::ofstream logfile_vel("logs/vel.txt");
+	std::copy(vel_log.begin(), vel_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_vel, "\n"));
+	logfile_vel.close();
+
+	std::ofstream logfile_fvel("logs/fvel.txt");
+	std::copy(fvel_log.begin(), fvel_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_fvel, "\n"));
+	logfile_fvel.close();
+
+	std::ofstream logfile_f("logs/f.txt");
+	std::copy(f_log.begin(), f_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_f, "\n"));
+	logfile_f.close();
+
+	std::ofstream logfile_t0("logs/t0.txt");
+	std::copy(t0_log.begin(), t0_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_t0, "\n"));
+	logfile_t0.close();
+
 	return 1;
 }
 

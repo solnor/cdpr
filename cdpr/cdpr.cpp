@@ -14,6 +14,8 @@
 #include <chrono>
 //#include <Windows.h>
 #include <vector>
+#include <fstream>
+#include <iterator>
 
 
 //constexpr int n_odrv = 4;
@@ -27,6 +29,8 @@ bool running = 1;
 int init_cdpr_params() {
 	a << -0.7560, -0.7560, 0.7560, 0.7560,
 	     -0.4181, 0.4181, 0.4181, -0.4181;
+	a << -0.7490, -0.7490, 0.7530, 0.7530,
+		 -0.4041, 0.4321, 0.4321, -0.4041;
 	// Trapezoidal b
 	b << -0.0250, -0.0750, 0.0750,  0.0250,
 	     -0.0100,  0.0100, 0.0100, -0.0100;
@@ -541,14 +545,13 @@ int main()
 	int ret = init_cdpr_params();
 	
 	auto start = std::chrono::high_resolution_clock::now();
-	q << 0.0, 0.0, 0.0;
-	q << -0.0368616,
-		-0.265815,
-		0.0561104;
+	q << 0.0, -0.2, 0.0;
 	inv_res inv_kin = inverse_kinematics(a, b, q, r_p);
 	std::cout << "l:\n" << inv_kin.l << std::endl;
 	std::cout << "betar:\n" << inv_kin.betar << std::endl;
-	inv_kin.l << inv_kin.l + (inv_kin.betar - 0.15194*Eigen::Vector4d::Ones())*r_p;
+	Eigen::Vector4d betae(0.188115601037228, 0.186058206914978, 0.187081318922497, 0.187081318922497);
+	//inv_kin.l << inv_kin.l + (inv_kin.betar - 0.15194*Eigen::Vector4d::Ones())*r_p;
+	inv_kin.l << inv_kin.l + (inv_kin.betar - betae)*r_p;
 	std::cout << "l:\n" << inv_kin.l << std::endl;
 	Eigen::Vector3d q0 = fk_init_estimate(a, b, inv_kin.l);
 	std::cout << "q0:\n" << q0 << std::endl;
@@ -558,14 +561,24 @@ int main()
 	Eigen::MatrixXd AT = calculate_structure_matrix(a, b, qe, inv_kin.betar, r_p);
 	std::cout << AT << std::endl;
 
-	double f_min = 15;
-	double f_max = 100;
+	double f_min = 10;
+	double f_max = 80;
 	double f_ref = (f_max + f_min) / 2;;
 	Eigen::Vector4d f_prev = f_ref*Eigen::Vector4d::Ones();
 	Eigen::Vector3d w_c(0, 0, 0);
 	force_alloc_res fares;
 	fares = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, w_c);
 	std::cout << "force allocation: \n" << fares.f << std::endl;
+	std::cout << "force allocation flag: \n" << fares.flag << std::endl;
+
+
+	/*std::vector<Eigen::Vector3d> q_log;
+	q_log.push_back(qe);
+	q_log.push_back(qe);
+	std::cout << "q_log:" << q_log[0] << std::endl;
+	std::ofstream myfilestream("myfile.txt");
+	std::copy(q_log.begin(), q_log.end(), std::ostream_iterator<Eigen::Vector3d>(myfilestream, "\n"));
+	myfilestream.close();*/
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 	std::cout << "Duration: " << duration.count() << " [ms]" << std::endl;
@@ -595,7 +608,7 @@ int main()
 	std::cin >> input;
 	com_init(handles, odrv_ports);
 
-	Eigen::Vector4d p0;
+	Eigen::Vector4d p0 = Eigen::Vector4d::Zero();
 	motor_state ms0;
 	motor_state ms1;
 	motor_state ms2;
@@ -666,7 +679,7 @@ int main()
 				pos_test(handles);
 				break;
 			case 8:
-				tension_control_loop(handles);
+				tension_control_loop(handles, p0);
 				break;
 			case 9:
 				move_on = 1;

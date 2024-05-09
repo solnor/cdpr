@@ -1,7 +1,7 @@
 #pragma once
 
 // ODrive.GpioMode
-typedef enum ODriveGpioMode {
+typedef enum {
 	GPIO_MODE_DIGITAL = 0,
 	GPIO_MODE_DIGITAL_PULL_UP,
 	GPIO_MODE_DIGITAL_PULL_DOWN,
@@ -20,19 +20,19 @@ typedef enum ODriveGpioMode {
 	GPIO_MODE_STATUS,
 	GPIO_MODE_BRAKE_RES,
 	GPIO_MODE_AUTO
-};
+} odrive_gpio_mode;
 
 // ODrive.StreamProtocolType
-typedef enum ODriveStreamProtocolType {
+typedef enum {
 	STREAM_PROTOCOL_TYPE_FIBRE = 0,
 	STREAM_PROTOCOL_TYPE_ASCII,
 	STREAM_PROTOCOL_TYPE_STDOUT,
 	STREAM_PROTOCOL_TYPE_ASCII_AND_STDOUT,
 	STREAM_PROTOCOL_TYPE_OTHER
-};
+} odrive_stream_protocol_type;
 
 // ODrive.Axis.AxisState
-typedef enum axis_states {
+typedef enum {
 	AXIS_STATE_UNDEFINED = 0,
 	AXIS_STATE_IDLE,
 	AXIS_STATE_STARTUP_SEQUENCE,
@@ -46,18 +46,18 @@ typedef enum axis_states {
 	AXIS_STATE_HOMING,
 	AXIS_STATE_ENCODER_HALL_POLARITY_CALIBRATION,
 	AXIS_STATE_ENCODER_HALL_PHASE_CALIBRATION
-};
+} axis_states;
 
 // ODrive.Controller.ControlMode
-typedef enum odrive_control_mode {
+typedef enum {
 	CONTROL_MODE_VOLTAGE_CONTROL = 0,
 	CONTROL_MODE_TORQUE_CONTROL,
 	CONTROL_MODE_VELOCITY_CONTROL,
 	CONTROL_MODE_POSITION_CONTROL
-};
+} odrive_control_mode;
 
 // ODrive.ComponentStatus
-typedef enum odrive_component_status {
+typedef enum {
 	COMPONENT_STATUS_NOMINAL = 0,
 	COMPONENT_STATUS_NO_RESPONSE,
 	COMPONENT_STATUS_INVALID_RESPONSE_LENGTH,
@@ -74,10 +74,10 @@ typedef enum odrive_component_status {
 	COMPONENT_STATUS_BAD_CONFIG,
 	COMPONENT_STATUS_NOT_ENABLED,
 	COMPONENT_STATUS_SPINOUT_DETECTED
-};
+} odrive_component_status;
 
 // ODrive.ProcedureResult
-typedef enum odrive_procedure_result {
+typedef enum {
 	PROCEDURE_RESULT_SUCCESS = 0,
 	PROCEDURE_RESULT_BUSY,
 	PROCEDURE_RESULT_CANCELLED,
@@ -94,10 +94,10 @@ typedef enum odrive_procedure_result {
 	PROCEDURE_RESULT_INVALID_STATE,
 	PROCEDURE_RESULT_NOT_CALIBRATED,
 	PROCEDURE_RESULT_NOT_CONVERGING
-};
+} odrive_procedure_result;
 
 // ODrive.EncoderId
-typedef enum odrive_encoder_id {
+typedef enum {
 	ENCODER_ID_NONE = 0,
 	ENCODER_ID_INC_ENCODER0,
 	ENCODER_ID_INC_ENCODER1,
@@ -113,10 +113,10 @@ typedef enum odrive_encoder_id {
 	ENCODER_ID_RS485_ENCODER2,
 	ENCODER_ID_ONBOARD_ENCODER0,
 	ENCODER_ID_ONBOARD_ENCODER1
-};
+} odrive_encoder_id;
 
 // ODrive.SpiEncoderMode
-typedef enum odrive_spi_encoder_mode {
+typedef enum {
 	SPI_ENCODER_MODE_DISABLED = 0,
 	SPI_ENCODER_MODE_RLS,
 	SPI_ENCODER_MODE_AMS,
@@ -125,19 +125,19 @@ typedef enum odrive_spi_encoder_mode {
 	SPI_ENCODER_MODE_MA732,
 	SPI_ENCODER_MODE_TLE,
 	SPI_ENCODER_MODE_BISSC
-};
+} odrive_spi_encoder_mode;
 
 // ODrive.Rs485EncoderMode
-typedef enum odrive_rs485_encoder_mode {
+typedef enum {
 	RS485_ENCODER_MODE_DISABLED = 0,
 	RS485_ENCODER_MODE_AMT21_POLLING,
 	RS485_ENCODER_MODE_AMT21_EVENT_DRIVEN,
 	RS485_ENCODER_MODE_MBS,
 	RS485_ENCODER_MODE_ODRIVE_OA1
-};
+} odrive_rs485_encoder_mode;
 
 // ODrive.Controller.InputMode
-typedef enum odrive_input_mode {
+typedef enum {
 	INPUT_MODE_INACTIVE = 0,
 	INPUT_MODE_PASSTHROUGH,
 	INPUT_MODE_VEL_RAMP,
@@ -147,14 +147,14 @@ typedef enum odrive_input_mode {
 	INPUT_MODE_TORQUE_RAMP,
 	INPUT_MODE_MIRROR,
 	INPUT_MODE_TUNING
-};
+} odrive_input_mode;
 
 // ODrive.MotorType
-typedef enum  odrive_motor_type {
+typedef enum {
 	MOTOR_TYPE_HIGH_CURRENT = 0,
 	MOTOR_TYPE_GIMBAL,
 	MOTOR_TYPE_ACIM
-};
+} odrive_motor_type;
 
 // ODrive.Error
 typedef enum {

@@ -266,12 +266,13 @@ int enable_brake_resistor_voltage_feedback(HANDLE handle) {
 
 	char c2[200];
 	std::string c2str = "w config.brake_resistor0.dc_bus_voltage_feedback_ramp_start " + std::to_string(ramp_start) + "\n";
-	strncpy_s(c2, sizeof(c2), c2str.c_str(), sizeof(c2str));
-	std::cout << c2 << std::endl;
+	strncpy_s(c2, sizeof(c2), c2str.c_str(), c2str.size());
+
+
 	
 	char c3[200];
 	std::string c3str = "w config.brake_resistor0.dc_bus_voltage_feedback_ramp_end " + std::to_string(ramp_end) + "\n";
-	strncpy_s(c2, sizeof(c2), c2str.c_str(), sizeof(c2str));
+	strncpy_s(c3, sizeof(c3), c3str.c_str(), c3str.size());
 
 	int r = 0;
 	// Enable dc_bus_voltage_feedback
@@ -281,7 +282,7 @@ int enable_brake_resistor_voltage_feedback(HANDLE handle) {
 	// Apply suggested settings to dc_bus_voltage_feedback_ramp_end
 	r = com_write_ln(handle, c2);
 	if (!r) return 0;
-	r = com_write_ln(handle, c2);
+	r = com_write_ln(handle, c3);
 	if (!r) return 0;
 	return 1;
 }

@@ -563,18 +563,39 @@ double fa_d_merit(const Eigen::Ref<const Eigen::VectorXd>& z,
 	double dphi_merit = dphivec.lpNorm<Eigen::Infinity>();
 	return dphi_merit;
 }
-
+// Function for calculating optimal force distributions of a Cable Driven Parallel Robot.
+//
+// Inspired by Einar Ueland, Thomas Sauder and Roger Skjetne, Department of
+// Marine Technology; Norwegian University of Science and Technology;
+// Centre for Autonomous Marine Operations and Systems(NTNU AMOS);
+// NO - 7491 Trondheim, Norway
+// SINTEF Ocean; NO - 7465 Trondheim, Norway
+//
+// Created by Magnus Grøterud, 13.04.2024
+// Rewritten by Sølve Nørsterud in C++
+//Outputs:
+// f : 4x1 Vector, calculated cable forces[f1;f2;f3;f4]
+// w_resultant : 3x1 Vector, calculated wrench[Fx;Fy:Mphi]
+//
+//Inputs :
+//	 A : 4x3 Matrix, Structure Matrix
+//	 f_min : Scalar, lower limit on cable forces
+//	 f_max : Scalar, upper limit on cable forces
+//	 f_ref : Scalar, preferred cable forces
+//	 f_prev : Scalar, previous cable forces
+//	 w_ref : 3x1 Vector, desired wrench
+//	
 force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::MatrixXd>& A,
-	double f_min,
-	double f_max,
-	double f_ref,
-	const Eigen::Ref<const Eigen::Vector4d>& f_prev,
-	const Eigen::Ref<const Eigen::Vector3d>& w_ref) {
+											double f_min,
+											double f_max,
+											double f_ref,
+											const Eigen::Ref<const Eigen::Vector4d>& f_prev,
+											const Eigen::Ref<const Eigen::Vector3d>& w_ref) {
 	force_alloc_res res;
 	res.flag = 0;
 	constexpr int m = 3; // Number of controllable DOFs
 	constexpr int n = 4; // Number of actuating cables
-	int p = 2; // P-norm value
+	int p = 2;           // P-norm value
 
 	// Defining the optimization matrices
 	Eigen::MatrixXd W = A.transpose();
@@ -585,18 +606,18 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 
 
 	// Parameters
-	double c = 1.5;         // Parameter adjusting how fast the cost function for the
-	// standard formulation increases
+	double c = 1.5;               // Parameter adjusting how fast the cost function for the
+	                              // standard formulation increases
 	double epsilon = pow(10, -3); // Parameter adjusting the curvature of the cost function
-	// for the slacked formulation
+	                              // for the slacked formulation
 	double b = 200;				  // Parameter steering the gradient of the cost term for 
-	// the slacked formulation
+	                              // the slacked formulation
 	double c_phi = 1;			  // Parameter for checking merit function value
 
 	// Newtons method on the KKT conditions
 	// Initialization
-	int iter = 0;    // Initializing iteration counter
-	int itermax = 300;  // Maximum iterations
+	int iter    = 0;    // Initializing iteration counter
+	int itermax = 100;  // Maximum iterations
 
 	Eigen::Vector4d f = f_prev;                  // Initial force
 	double f0 = f_ref;                           // Reference force
@@ -604,7 +625,7 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 	Eigen::VectorXd x(f.rows() + s.rows());      // Optimization variables
 	x << f, s;
 
-	Eigen::Vector3d lambda = Eigen::Vector3d::Zero(); // Initial Lagrangian multipliers
+	Eigen::Vector3d lambda      = Eigen::Vector3d::Zero(); // Initial Lagrangian multipliers
 	Eigen::Vector3d lambda_prev = Eigen::Vector3d::Zero(); // Previous Lagrangian multipliers
 
 	Eigen::VectorXd z(x.rows() + lambda.rows()); // Initial full state
@@ -621,10 +642,9 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 
 	while (iter <= itermax) {
 		// 1) Calculate Newton step
-
 		Eigen::VectorXd G_x = fa_gradient_x(x, f_min, f_max, f_ref, p, c, b, epsilon); // Calculate gradient of objective function
 		Eigen::MatrixXd H_x = fa_hessian_x(x, f_min, f_max, f_ref, p, c, b, epsilon);  // Calculate hessian of objective function
-
+		
 		Eigen::MatrixXd A_KKT(H_x.rows() + A_.rows(), A_.cols() + zero_block.cols()); // KKT Matrix
 		A_KKT << H_x, A_.transpose(),
 			A_, zero_block;
