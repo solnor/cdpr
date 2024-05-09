@@ -541,7 +541,10 @@ int main()
 	int ret = init_cdpr_params();
 	
 	auto start = std::chrono::high_resolution_clock::now();
-	q << 0, -0.3, 0;
+	q << 0.0, 0.0, 0.0;
+	q << -0.0368616,
+		-0.265815,
+		0.0561104;
 	inv_res inv_kin = inverse_kinematics(a, b, q, r_p);
 	std::cout << "l:\n" << inv_kin.l << std::endl;
 	std::cout << "betar:\n" << inv_kin.betar << std::endl;
@@ -551,12 +554,12 @@ int main()
 	std::cout << "q0:\n" << q0 << std::endl;
 	Eigen::Vector3d qe = forward_kinematics(a, b, q0, inv_kin.l, r_p);
 	std::cout << "qe" << std::endl;
-	std::cout << qe*pow(10,3) << std::endl;
+	std::cout << qe << std::endl;
 	Eigen::MatrixXd AT = calculate_structure_matrix(a, b, qe, inv_kin.betar, r_p);
 	std::cout << AT << std::endl;
 
 	double f_min = 15;
-	double f_max = 80;
+	double f_max = 100;
 	double f_ref = (f_max + f_min) / 2;;
 	Eigen::Vector4d f_prev = f_ref*Eigen::Vector4d::Ones();
 	Eigen::Vector3d w_c(0, 0, 0);
@@ -592,6 +595,17 @@ int main()
 	std::cin >> input;
 	com_init(handles, odrv_ports);
 
+	Eigen::Vector4d p0;
+	motor_state ms0;
+	motor_state ms1;
+	motor_state ms2;
+	motor_state ms3;
+	std::vector<motor_state*> motor_states;
+	motor_states.push_back(&ms0);
+	motor_states.push_back(&ms1);
+	motor_states.push_back(&ms2);
+	motor_states.push_back(&ms3);
+
 	while (!move_on) {
 		std::cout << "Select procedure (1-8):" << std::endl;
 		std::cout << "1) Move platform with arrow keys" << std::endl;
@@ -625,7 +639,15 @@ int main()
 				//com_init(handles, odrv_ports);
 
 				double positions[4];
-				set_all_encoder_positions(handles, positions);
+				//set_all_encoder_positions(handles, positions);
+				
+				get_all_motor_states(handles, motor_states);
+				p0 << ms0.pos,
+					  ms1.pos,
+					  ms2.pos,
+					  ms3.pos;
+				std::cout << "p0: \n" << p0 << std::endl;
+
 				break;
 			case 4:
 				//com_init(handles, odrv_ports);

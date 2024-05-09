@@ -45,11 +45,11 @@ Eigen::MatrixXd calculate_structure_matrix(const Eigen::Ref<const Eigen::MatrixX
 										   const Eigen::Ref<const Eigen::Vector4d>& betar,
 										   double r_p);
 
-typedef struct {
+struct force_alloc_res {
 	Eigen::Vector4d f;
 	Eigen::Vector3d w;
 	int flag = 0;
-} force_alloc_res;
+};
 
 force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::MatrixXd>& A,
 										    double f_min,

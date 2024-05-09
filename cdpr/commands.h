@@ -4,14 +4,14 @@
 #include <vector>
 #include <Dense>
 
-typedef struct{
+struct odrive_state {
 	double k = 0.0;
-} odrive_state;
+};
 
-typedef struct {
+struct motor_state {
 	double pos;
 	double vel;
-} motor_state;
+};
 
 int read_state(HANDLE handle, odrive_state *state);
 int find_driver_errors(HANDLE handle, odrive_state *state);

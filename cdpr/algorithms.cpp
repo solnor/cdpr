@@ -541,11 +541,11 @@ double fa_d_merit(const Eigen::Ref<const Eigen::VectorXd>& z,
 }
 
 force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::MatrixXd>& A,
-										    double f_min,
-										    double f_max,
-										    double f_ref,
-										    const Eigen::Ref<const Eigen::Vector4d>& f_prev,
-										    const Eigen::Ref<const Eigen::Vector3d>& w_ref) {
+	double f_min,
+	double f_max,
+	double f_ref,
+	const Eigen::Ref<const Eigen::Vector4d>& f_prev,
+	const Eigen::Ref<const Eigen::Vector3d>& w_ref) {
 	force_alloc_res res;
 	res.flag = 0;
 	constexpr int m = 3; // Number of controllable DOFs
@@ -561,17 +561,17 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 
 
 	// Parameters
-	double c       = 1.5;         // Parameter adjusting how fast the cost function for the
-								  // standard formulation increases
+	double c = 1.5;         // Parameter adjusting how fast the cost function for the
+	// standard formulation increases
 	double epsilon = pow(10, -3); // Parameter adjusting the curvature of the cost function
-								  // for the slacked formulation
+	// for the slacked formulation
 	double b = 200;				  // Parameter steering the gradient of the cost term for 
-								  // the slacked formulation
+	// the slacked formulation
 	double c_phi = 1;			  // Parameter for checking merit function value
 
 	// Newtons method on the KKT conditions
 	// Initialization
-	int iter    = 0;    // Initializing iteration counter
+	int iter = 0;    // Initializing iteration counter
 	int itermax = 300;  // Maximum iterations
 
 	Eigen::Vector4d f = f_prev;                  // Initial force
@@ -580,9 +580,9 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 	Eigen::VectorXd x(f.rows() + s.rows());      // Optimization variables
 	x << f, s;
 
-	Eigen::Vector3d lambda      = Eigen::Vector3d::Zero(); // Initial Lagrangian multipliers
+	Eigen::Vector3d lambda = Eigen::Vector3d::Zero(); // Initial Lagrangian multipliers
 	Eigen::Vector3d lambda_prev = Eigen::Vector3d::Zero(); // Previous Lagrangian multipliers
-	
+
 	Eigen::VectorXd z(x.rows() + lambda.rows()); // Initial full state
 	z << x, lambda;
 	double tol = 5 * pow(10, -5);
@@ -590,7 +590,7 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 	Eigen::Matrix3d zero_block = Eigen::Matrix3d::Zero();
 
 	double kappa = 1; // Initial Step Size for Newton Step
-	
+
 	int iter_merit = 0;
 	int iter_merit_max = 100;
 
@@ -603,12 +603,12 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 
 		Eigen::MatrixXd A_KKT(H_x.rows() + A_.rows(), A_.cols() + zero_block.cols()); // KKT Matrix
 		A_KKT << H_x, A_.transpose(),
-			     A_, zero_block;
-		
-		Eigen::VectorXd B_KKT(G_x.rows() + (A_*x - w_ref).rows()); 
-		B_KKT << G_x, 
-			     A_*x - w_ref;
-		
+			A_, zero_block;
+
+		Eigen::VectorXd B_KKT(G_x.rows() + (A_ * x - w_ref).rows());
+		B_KKT << G_x,
+			A_* x - w_ref;
+
 		Eigen::VectorXd d_k = A_KKT.colPivHouseholderQr().solve(-B_KKT); // Calculate Newton step
 		d_k(Eigen::seq(7, 9)) -= lambda_prev;
 
@@ -619,21 +619,21 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 		double phi_merit = fa_merit_function(z, G_x, A_, w_ref);
 		double phi_kappa = fa_merit_function(z + kappa * d_k, G_x, A_, w_ref);
 		double dphi = fa_d_merit(z, G_x, A_, w_ref, d_k);
-		
+
 		// Check if merit function is below the predetermined tolerance threshold
 		if (phi_merit < tol) {
 			break;
 		}
 		// Else, update
 		iter_merit = 0;
-		while ((phi_kappa > phi_merit + c_phi * kappa*dphi) 
-			   && (iter_merit <= iter_merit_max)) {
+		while ((phi_kappa > phi_merit + c_phi * kappa * dphi)
+			&& (iter_merit <= iter_merit_max)) {
 			kappa -= 0.01;
 			if (kappa <= 0) {
 				kappa = 0;
 				break;
 			}
-			
+
 			phi_kappa = fa_merit_function(z + kappa * d_k, G_x, A_, w_ref);
 			// Update iteration for merit function
 			iter_merit++;
@@ -641,14 +641,14 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 				std::cout << "FA: Too many iterations (Merit function)" << std::endl;
 			}
 		}
-		
+
 		// 3) Perform Newton step
 		z += kappa * d_k;
 		// Update previous lambda
 		lambda_prev = z(Eigen::seq(7, 9));
 
 		// Extract state
-		x = z(Eigen::seq(0,6));
+		x = z(Eigen::seq(0, 6));
 
 		// 4) Update main iterations
 		iter++;
@@ -666,10 +666,10 @@ force_alloc_res force_alloc_iterative_slack(const Eigen::Ref<const Eigen::Matrix
 	//std::cout << "FA: z: \n" << z << std::endl;
 	//std::cout << "FA: res.f: \n" << res.f << std::endl;
 	for (uint8_t i = 0; i < 4; i++) {
-		if (res.f(i) < f_min) {
+		if (res.f(i) < 0) {
 			res.f = f_prev;
 			res.flag = 1;
-			std::cout << "FA: Forces below f_min. Setting forces equal to previous ones." << std::endl;
+			std::cout << "FA: Forces below zero. Setting forces equal to previous ones." << std::endl;
 			break;
 		}
 	}
