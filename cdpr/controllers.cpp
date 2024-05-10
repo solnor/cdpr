@@ -241,14 +241,22 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	motor_states.push_back(&ms3);
 
 
+	std::vector<Eigen::Vector3d> p_log;
+	std::vector<Eigen::Vector3d> i_log;
+	std::vector<Eigen::Vector3d> d_log;
 	std::vector<Eigen::Vector3d> q_log;
+	std::vector<Eigen::Vector3d> qdot_log;
+	std::vector<Eigen::Vector3d> fqdot_log;
 	std::vector<Eigen::Vector3d> qd_log;
+	std::vector<Eigen::Vector3d> qddot_log;
 	std::vector<Eigen::Vector3d> wd_log;
 	std::vector<Eigen::Vector3d> wa_log;
 	std::vector<Eigen::Vector3d> eint_log;
 	std::vector<Eigen::Vector3d> wint_log;
 	std::vector<Eigen::Vector4d> vel_log;
 	std::vector<Eigen::Vector4d> fvel_log;
+	std::vector<Eigen::Vector4d> vel_m_rad_log;
+	std::vector<Eigen::Vector4d> fvel_m_rad_log;
 	std::vector<Eigen::Vector4d> f_log;
 	std::vector<Eigen::Vector4d> t0_log;
 	std::vector<double> t_log;
@@ -258,7 +266,7 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	//Eigen::Vector4d ;
 	Eigen::Vector4d vel, vel_rad;
 	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
-	Eigen::Vector4d vel_m, vel_m_rad;
+	Eigen::Vector4d vel_m, vel_m_rad, fvel_m_rad = Eigen::Vector4d::Zero();
 	Eigen::Vector4d l, ldot, lfk;
 	//Eigen::Vector4d l0(1.2260,
 	//				   1.1833,
@@ -278,7 +286,7 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 						   0.3617);
 	inv_res invkin;
 
-	Eigen::MatrixXd AT, AT_pinv, A_pinv = Eigen::MatrixXd::Zero(3, 4);
+	Eigen::MatrixXd AT, AT_pinv, A_pinv, AT_fa = Eigen::MatrixXd::Zero(3, 4);
 	//Eigen::MatrixXd  = Eigen::MatrixXd::Zero(3, 4);
 	//Eigen::MatrixXd A_pinv  = Eigen::MatrixXd::Zero(3, 4);
 
@@ -332,9 +340,11 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	double precy = 3;
 	double prect = 0;
 
-	Eigen::Vector3d q, qdot = Eigen::Vector3d::Zero();
-	Eigen::Vector3d qd, qddot = Eigen::Vector3d::Zero();
+	Eigen::Vector3d q, qdot, fq = Eigen::Vector3d::Zero();
+	Eigen::Vector3d qd, qddot, fqdot = Eigen::Vector3d::Zero();
 	double omega = 2.5;
+	double Lx = 0.15;
+	double Ly = 0.15;
 	Eigen::Vector3d e, edot, eint = Eigen::Vector3d::Zero();
 	double dt = 15*pow(10,-3);
 	Eigen::Vector3d wd, we, wa, w0, wint = Eigen::Vector3d::Zero();
@@ -352,9 +362,9 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	Ki(2, 2) = 0; // Integral gain theta
 
 	Eigen::Matrix3d Kd = Eigen::Matrix3d::Zero();
-	Kd(0, 0) = 11;  // Derivative gain x
-	Kd(1, 1) = 19;  // Derivative gain y
-	Kd(2, 2) = 0;  // Derivative gain theta
+	Kd(0, 0) = 15;  // Derivative gain x
+	Kd(1, 1) = 21;  // Derivative gain y
+	Kd(2, 2) = 0.01;  // Derivative gain theta
 	//Eigen::Vector3d eint = Eigen::Vector3d::Zero();
 	int key_pressed = 0;
 
@@ -430,15 +440,14 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		vel_rad << vel * 2 * PI;
 		vel_m << vel.cwiseProduct(motor_signs);
 		vel_m_rad << vel_rad.cwiseProduct(motor_signs);
+		
+		fvel_m_rad << 0.6*fvel_m_rad + 0.4*vel_m_rad;
+
 
 		l << l0 + pos_rad.cwiseProduct(r_d*motor_signs);
-		ldot << r_d * vel_m_rad;
+		ldot << r_d * fvel_m_rad;
 
 		// Subtract length between drum and pulley from total cable length to get length used in FK
-		/*lfk << l(0) - sqrt( pow(sqrt( pow(pos(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(1) - sqrt( pow(sqrt( pow(pos(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(2) - sqrt( pow(sqrt( pow(pos(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)),
-			   l(3) - sqrt( pow(sqrt( pow(pos(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2));*/
 		lfk << l(0) - sqrt( pow(pos(0)*pitch_drum, 2) + pow(lde2pe(0), 2)),
 			   l(1) - sqrt( pow(pos(1)*pitch_drum, 2) + pow(lde2pe(1), 2)),
 			   l(2) - sqrt( pow(pos(2)*pitch_drum, 2) + pow(lde2pe(2), 2)),
@@ -457,21 +466,31 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
 		A_pinv = (-1*AT).transpose().completeOrthogonalDecomposition().pseudoInverse();
 		qdot = A_pinv*ldot;
+		fqdot << qdot(0), qdot(1), 0.7*fqdot(2) + 0.3*qdot(2);
 		
 		//wd << 0, 0, 0;
 
 		t_since_start_c = std::chrono::duration<double>(t_since_start).count();
 		std::cout << "Time since start: " << t_since_start_c << std::endl;
-		qd << 0.1*cos(omega*t_since_start_c),
-			  0.1*sin(omega* t_since_start_c)-0.2,
+		qd << Lx*sin(omega*t_since_start_c),
+			  Ly*cos(omega*t_since_start_c)-0.15,
 			  0;
-		qddot << -omega*0.1*sin(omega*t_since_start_c),
-			      omega*0.1*cos(omega*t_since_start_c),
+		qddot <<  omega*Lx*cos(omega*t_since_start_c),
+			     -omega*Ly*sin(omega*t_since_start_c),
 			      0;
+
+		/*qd << 0.2 * cos(t_since_start_c),
+			  0.75 * sin(t_since_start_c) * cos(t_since_start_c) - 0.1,
+			  0;
+		
+		qddot << -0.2 * sin(t_since_start_c),
+				 -0.75 * cos(2*t_since_start_c),
+				  0;*/
+
 		// * cos(8 * std::chrono::duration<double>(t_since_start).count())
 		//qd << 0.1, 0, 0;
 		e << qd - q;
-		edot << qddot - qdot;
+		edot << qddot - fqdot;
 		eint += e * dt;
 		wint = Ki * eint;
 		std::cout << "wint: \n" << wint << std::endl;
@@ -491,10 +510,11 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		wint(2) = wint(2) > intlimit(2) ? intlimit(2) :
 										  abs(wint(2)) > intlimit(2) ? intlimit(2) : wint(2);*/
 		wd << Kp * e + Kd*edot + wint;
+		
 		//wd << 0.0, 0.0, 0.0;
 		//e << 1.0, 1.0, 1.0;
 		//std::cout << "vel: \n" << vel << std::endl;
-		qdot = A_pinv * ldot;
+		//qdot = A_pinv * ldot;
 		//std::cout << "qdot: \n" << qdot << std::endl;
 		//fs = calculate_fs2(vel, qdot, AT, e, f_static,precv, precx, precy, prect, 2);
 		//std::cout << "fs: \n" << fs << std::endl;
@@ -522,7 +542,12 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
 		//std::cout << "f0: \n" << f0 << std::endl;
 		//std::cout << "wd: \n" << wd << std::endl;
-
+		//q_fa << q(1), q(2), 0;
+		/*AT_fa = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
+		AT_fa(2, 0) = 0;
+		AT_fa(2, 1) = 0;
+		AT_fa(2, 2) = 0;
+		wd(2) = 0;*/
 		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
 		wa << AT * fres.f;
 		//fres.f = f_ref * Eigen::Vector4d::Ones() - AT_pinv * (wd + AT * f_ref * Eigen::Vector4d::Ones());
@@ -537,12 +562,20 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		}
 
 		
+		p_log.push_back(Kp*e);
+		i_log.push_back(wint);
+		d_log.push_back(Kd*edot);
 		q_log.push_back(q);
+		qdot_log.push_back(qdot);
+		fqdot_log.push_back(fqdot);
+		qddot_log.push_back(qddot);
 		qd_log.push_back(qd);
 		wd_log.push_back(wd);
 		wa_log.push_back(wa);
 		vel_log.push_back(vel);
 		fvel_log.push_back(fvel);
+		fvel_m_rad_log.push_back(fvel_m_rad);
+		vel_m_rad_log.push_back(vel_m_rad);
 		f_log.push_back(fres.f);
 		t0_log.push_back(t0);
 		eint_log.push_back(eint);
@@ -582,7 +615,19 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	std::ofstream logfile_qd("logs/qd.txt");
 	std::copy(qd_log.begin(), qd_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_qd, "\n"));
 	logfile_qd.close();
+	
+	std::ofstream logfile_qdot("logs/qdot.txt");
+	std::copy(qdot_log.begin(), qdot_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_qdot, "\n"));
+	logfile_qdot.close();
 
+	std::ofstream logfile_fqdot("logs/fqdot.txt");
+	std::copy(fqdot_log.begin(), fqdot_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_fqdot, "\n"));
+	logfile_fqdot.close();
+
+	std::ofstream logfile_qddot("logs/qddot.txt");
+	std::copy(qddot_log.begin(), qddot_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_qddot, "\n"));
+	logfile_qddot.close();
+	
 	std::ofstream logfile_t("logs/t.txt");
 	std::copy(t_log.begin(), t_log.end(), std::ostream_iterator<double>(logfile_t, "\n"));
 	logfile_t.close();
@@ -591,6 +636,14 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	std::copy(eint_log.begin(), eint_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_eint, "\n"));
 	logfile_eint.close();
 	
+	std::ofstream logfile_pw("logs/pw.txt");
+	std::copy(p_log.begin(), p_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_pw, "\n"));
+	logfile_pw.close();
+
+	std::ofstream logfile_dw("logs/dw.txt");
+	std::copy(d_log.begin(), d_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_dw, "\n"));
+	logfile_dw.close();
+
 	std::ofstream logfile_wint("logs/wint.txt");
 	std::copy(wint_log.begin(), wint_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_wint, "\n"));
 	logfile_wint.close();
@@ -610,6 +663,14 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	std::ofstream logfile_fvel("logs/fvel.txt");
 	std::copy(fvel_log.begin(), fvel_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_fvel, "\n"));
 	logfile_fvel.close();
+	
+	std::ofstream logfile_vel_m_rad("logs/vel_m_rad.txt");
+	std::copy(vel_m_rad_log.begin(), vel_m_rad_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_vel_m_rad, "\n"));
+	logfile_vel_m_rad.close();
+
+	std::ofstream logfile_fvel_m_rad("logs/fvel_m_rad.txt");
+	std::copy(fvel_m_rad_log.begin(), fvel_m_rad_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_fvel_m_rad, "\n"));
+	logfile_fvel_m_rad.close();
 
 	std::ofstream logfile_f("logs/f.txt");
 	std::copy(f_log.begin(), f_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_f, "\n"));
