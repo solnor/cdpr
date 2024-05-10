@@ -259,6 +259,8 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	std::vector<Eigen::Vector4d> fvel_m_rad_log;
 	std::vector<Eigen::Vector4d> f_log;
 	std::vector<Eigen::Vector4d> t0_log;
+	std::vector<Eigen::Vector4d> l_log;
+	std::vector<Eigen::Vector4d> ldot_log;
 	std::vector<double> t_log;
 
 	Eigen::Vector4d pos_enc, pos, p0, pos_rad;
@@ -343,8 +345,8 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	Eigen::Vector3d q, qdot, fq = Eigen::Vector3d::Zero();
 	Eigen::Vector3d qd, qddot, fqdot = Eigen::Vector3d::Zero();
 	double omega = 2.5;
-	double Lx = 0.15;
-	double Ly = 0.15;
+	double Lx = 0.10;
+	double Ly = 0.10;
 	Eigen::Vector3d e, edot, eint = Eigen::Vector3d::Zero();
 	double dt = 15*pow(10,-3);
 	Eigen::Vector3d wd, we, wa, w0, wint = Eigen::Vector3d::Zero();
@@ -475,16 +477,24 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		qd << Lx*sin(omega*t_since_start_c),
 			  Ly*cos(omega*t_since_start_c)-0.15,
 			  0;
-		qddot <<  omega*Lx*cos(omega*t_since_start_c),
+		/*qddot <<  omega*Lx*cos(omega*t_since_start_c),
 			     -omega*Ly*sin(omega*t_since_start_c),
-			      0;
-
+			      0;*/
+		qd << 0.0, -0.05, 0.0;
+		qddot << 0, 0, 0;
 		/*qd << 0.2 * cos(t_since_start_c),
 			  0.75 * sin(t_since_start_c) * cos(t_since_start_c) - 0.1,
 			  0;
 		
 		qddot << -0.2 * sin(t_since_start_c),
 				 -0.75 * cos(2*t_since_start_c),
+				  0;*/
+		/*qd << 0.15*cos(omega*t_since_start_c + 1.57),
+			  0.1*sin(omega*t_since_start_c + 1.57)*cos(omega*t_since_start_c + 1.57) - 0.1,
+			  0;
+		
+		qddot << -0.15*omega*sin(omega*t_since_start_c),
+				 -0.1*omega*cos(2*omega*t_since_start_c),
 				  0;*/
 
 		// * cos(8 * std::chrono::duration<double>(t_since_start).count())
@@ -581,6 +591,8 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		eint_log.push_back(eint);
 		wint_log.push_back(wint);
 		t_log.push_back(t_since_start_c);
+		ldot_log.push_back(ldot);
+		l_log.push_back(l);
 
 		key_pressed = poll_keys2();
 		if (key_pressed == 2) {
@@ -679,6 +691,14 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	std::ofstream logfile_t0("logs/t0.txt");
 	std::copy(t0_log.begin(), t0_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_t0, "\n"));
 	logfile_t0.close();
+	
+	std::ofstream logfile_l("logs/l.txt");
+	std::copy(l_log.begin(), l_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_l, "\n"));
+	logfile_l.close();
+
+	std::ofstream logfile_ldot("logs/ldot.txt");
+	std::copy(ldot_log.begin(), ldot_log.end(), std::ostream_iterator<Eigen::Vector4d>(logfile_ldot, "\n"));
+	logfile_ldot.close();
 
 	return 1;
 }

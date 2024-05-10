@@ -170,6 +170,36 @@ while 1
 end
 
 i = 1;
+fid = fopen('C:\Users\eliasoa\source\repos\cdpr\cdpr\logs\l.txt');
+l = [0;0;0;0];
+while 1
+    l_tmp = [str2double(fgetl(fid));
+             str2double(fgetl(fid));
+             str2double(fgetl(fid));
+             str2double(fgetl(fid))];
+    if isnan(l_tmp)
+        break;
+    end
+    l(:,i) = l_tmp;
+    i = i + 1;
+end
+
+i = 1;
+fid = fopen('C:\Users\eliasoa\source\repos\cdpr\cdpr\logs\ldot.txt');
+ldot = [0;0;0;0];
+while 1
+    ldot_tmp = [str2double(fgetl(fid));
+                str2double(fgetl(fid));
+                str2double(fgetl(fid));
+                str2double(fgetl(fid))];
+    if isnan(ldot_tmp)
+        break;
+    end
+    ldot(:,i) = ldot_tmp;
+    i = i + 1;
+end
+
+i = 1;
 fid = fopen('C:\Users\eliasoa\source\repos\cdpr\cdpr\logs\vel.txt');
 vel = [0;0;0;0];
 while 1
@@ -256,7 +286,7 @@ while 1
     wa(:,i) = wa_tmp;
     i = i + 1;
 end
-
+save('C:\Users\eliasoa\source\repos\cdpr\cdpr\workspace_logs\step_ym005')
 %% Plot q and q_d
 figure(1)
 subplot(3,1,1)
@@ -311,7 +341,13 @@ legend("Pose", "Desired Pose")
 xlim([-0.5, 0.5])
 ylim([-0.5, 0.5])
 grid on;
-
+%% Plot xy plot of qdot and qddot
+figure(15)
+plot(qdot(1,:), qdot(2,:), qddot(1,:), qddot(2,:))
+legend("Twist", "Desired Twist")
+xlim([-0.5, 0.5])
+ylim([-0.5, 0.5])
+grid on;
 %% Plot of cable forces, impulses and motor velocities
 figure(4)
 subplot(3,1,1)
