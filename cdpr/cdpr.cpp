@@ -31,6 +31,8 @@ int init_cdpr_params() {
 	     -0.4181, 0.4181, 0.4181, -0.4181;
 	a << -0.7490, -0.7490, 0.7530, 0.7530,
 		 -0.4041, 0.4321, 0.4321, -0.4041;
+	a << -0.7510, -0.7510, 0.7510, 0.7510,
+		-0.4181, 0.4181, 0.4181, -0.4181;
 	// Trapezoidal b
 	b << -0.0250, -0.0750, 0.0750,  0.0250,
 	     -0.0100,  0.0100, 0.0100, -0.0100;
@@ -42,7 +44,7 @@ int init_cdpr_params() {
 int set_standard_tension(HANDLE handles[]) {
 	set_all_axis_states(handles, AXIS_STATE_CLOSED_LOOP_CONTROL);
 	Sleep(10);
-	Eigen::Vector4d torques = -0.2*motor_signs;
+	Eigen::Vector4d torques = -0.15*motor_signs;
 	set_all_motor_torques(handles, torques);
 	return 1;
 }
@@ -219,306 +221,6 @@ Eigen::Vector4d calculate_fs(const Eigen::Ref<const Eigen::Vector4d>& vels,
 // Set motor torques
 
 
-int control_loop() {
-	motor_state ms0;
-	motor_state ms1;
-	motor_state ms2;
-	motor_state ms3;
-	std::vector<motor_state*> motor_states;
-	motor_states.push_back(&ms0);
-	motor_states.push_back(&ms1);
-	motor_states.push_back(&ms2);
-	motor_states.push_back(&ms3);
-
-	Eigen::Vector4d pos;
-	Eigen::Vector4d pos_rad;
-	Eigen::Vector4d vel;
-	Eigen::Vector4d vel_rad;
-	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
-	Eigen::Vector4d vel_m;
-	Eigen::Vector4d vel_m_rad;
-	Eigen::Vector4d l;
-	Eigen::Vector4d ldot;
-	Eigen::Vector4d l0(1.2260, 
-		               1.1833,
-		               1.1833, 
-		               1.2260);
-	Eigen::Vector4d lfk;
-	
-	inv_res invkin;
-
-	Eigen::MatrixXd AT      = Eigen::MatrixXd::Zero(3, 4);
-	Eigen::MatrixXd AT_pinv = Eigen::MatrixXd::Zero(3, 4);
-	Eigen::MatrixXd A_pinv  = Eigen::MatrixXd::Zero(3, 4);
-
-	double f_min = 15;
-	double f_max = 80;
-	double f_ref = (f_max + f_min) / 2;
-	Eigen::Vector4d f_prev = f_ref * Eigen::Vector4d::Ones();
-	force_alloc_res fres;
-
-	Eigen::Vector4d f_static(0.0840 * 1 / r_d,
-							 0.0820 * 1 / r_d,
-							 0.1040 * 1 / r_d,
-							 0.0780 * 1 / r_d);
-	Eigen::Vector4d f_loss(2.195,
-						   1.995,
-						   2.245,
-						   1.845);
-	//Eigen::Vector4d f_loss(6.195,
-	//					   2.295,
-	//					   2.245,
-	//					   6.245);
-	//Eigen::Vector4d f_loss(2.195,
-	//					   -1,
-	//					   -1,
-	//					   2.245);
-	/*Eigen::Vector4d f_loss(1.,
-						   1.,
-						   1.,
-						   1.);*/
-	Eigen::Vector4d f_pinv   = Eigen::Vector4d::Zero();
-	Eigen::Vector3d e_t      = Eigen::Vector3d::Zero();
-	Eigen::Vector4d fs       = Eigen::Vector4d::Zero();
-	Eigen::Vector4d f0       = Eigen::Vector4d::Zero();
-	double precv = 2;
-	double precx = 3;
-	double precy = 3;
-	double prect = 0;
-
-	Eigen::Vector3d q = Eigen::Vector3d::Zero();
-	Eigen::Vector3d qdot = Eigen::Vector3d::Zero();
-	Eigen::Vector3d qd;
-	Eigen::Vector3d e;
-	Eigen::Vector3d wd;
-	Eigen::Vector3d we;
-	Eigen::Vector4d T = Eigen::Vector4d::Zero();
-
-	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
-	Kp(0, 0) = 200; // Proportional gain x
-	Kp(1, 1) = 150; // Proportional gain y
-	Kp(2, 2) = 5;   // Proportional gain theta
-
-	Eigen::Matrix3d Ki = Eigen::Matrix3d::Zero();
-	Ki(0, 0) = 0; // Integral gain x
-	Ki(1, 1) = 0; // Integral gain y
-	Ki(2, 2) = 0; // Integral gain theta
-	Eigen::Vector3d eint = Eigen::Vector3d::Zero();
-
-	double r_d = 20 * convmm2m;
-	double pitch_drum = 2.9 * convmm2m;
-	double ydiff = 371.4759 * convmm2m;
-	double xdiff = 56.40783 * convmm2m;
-
-	bool any_error = 0;
-
-	Eigen::Vector4d test = Eigen::Vector4d::Zero();
-
-	std::cout << "Set starting torques? (y/n)" << std::endl;
-	int r = 0;
-	while (!(r == 3))
-	{
-		r = poll_keys();
-		if (r == 4) return 0;
-		//std::cout << r << std::endl;
-	}
-	Sleep(250);
-	
-	std::cout << "Setting starting torques" << std::endl;
-	for (uint8_t i = 0; i < 4; i++) {
-		//set_axis_state(handles[i], AXIS_STATE_CLOSED_LOOP_CONTROL); // TODO: Change to set_all_axis_states()
-		Sleep(10);
-		test(i) = 0.2*(-1)*motor_signs(i);
-		//set_motor_torque(handles[i], test(i)); // TODO: Change to set_all_motor_torques()
-		
-	}
-	std::string input;
-	//std::cin >> input;
-	std::cout << "Set home position?" << std::endl;
-	r = 0;
-	while (!(r == 3))
-	{
-		r = poll_keys();
-		if (r == 4) return 0;
-		//std::cout << r << std::endl;
-	}
-	Sleep(250);
-	//std::cin >> input; // TODO: Change to key presses
-	// while (keypress != y or n)
-	//		keypress = poll keys
-	//		if keypress == y or n
-	//			continue
-	//		else
-	//          return
-	//if (is_number(input)) {
-	std::cout << "Setting home position" << std::endl;
-	for (uint8_t i = 0; i < 4; i++) {
-		set_encoder_position(handles[i], 0.0);
-		Sleep(10);
-	}
-	std::cout << "Set home position?" << std::endl;
-	//std::cin >> input;
-	r = 0;
-	while (!(r == 3))
-	{
-		r = poll_keys();
-		if (r == 4) return 0;
-	}
-	Sleep(250);
-	std::cout << "Setting home position" << std::endl;
-	for (uint8_t i = 0; i < 4; i++) {
-		set_encoder_position(handles[i], 0.0);
-		Sleep(10);
-	}
-		
-	//}
-	get_all_motor_states(handles, motor_states);
-	std::cout << "Motor positions: " << ms0.pos << ", " << ms1.pos << ", " << ms2.pos << ", " << ms3.pos << std::endl;
-	std::cout << "Start control loop?" << std::endl;
-	r = 0;
-	while (!(r == 3))
-	{
-		r = poll_keys();
-		if (r == 4) return 0;
-	}
-	Sleep(250);
-	std::cout << "Running" << std::endl;
-	auto start_loop = std::chrono::high_resolution_clock::now();
-	while (running) {
-
-		any_error = check_if_any_driver_errors(handles);
-		if (any_error) { 
-			running = 0;
-			std::cout << "Breaking" << std::endl;
-			break;
-		};
-
-		auto start = std::chrono::high_resolution_clock::now();
-		get_all_motor_states(handles, motor_states);
-		pos << ms0.pos,
-			   ms1.pos,	
-			   ms2.pos,
-			   ms3.pos;
-		pos_rad << pos * 2*PI;
-
-		vel << ms0.vel,
-			   ms1.vel,	
-			   ms2.vel,
-			   ms3.vel;
-		vel_rad << vel * 2 * PI;
-		vel_m << vel.cwiseProduct(motor_signs);
-		vel_m_rad << vel_rad.cwiseProduct(motor_signs);
-		l << l0 + pos_rad.cwiseProduct(r_d*motor_signs);
-		ldot << r_d*vel_m_rad;
-		//std::cout << "pos: \n" << pos << std::endl;
-		//std::cout << "pos_rad: \n" << pos_rad << std::endl;
-
-		lfk << l(0) - sqrt( pow(sqrt( pow(pos_rad(0)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)), // Subtract length between
-			   l(1) - sqrt( pow(sqrt( pow(pos_rad(1)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)), // drum and pulley from
-			   l(2) - sqrt( pow(sqrt( pow(pos_rad(2)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)), // total cable length
-			   l(3) - sqrt( pow(sqrt( pow(pos_rad(3)*pitch_drum, 2) + pow(ydiff,2) ), 2) + pow(xdiff,2)); // to get length used in FK
-
-		q = forward_kinematics(a, b, 
-							   fk_init_estimate(a, b, lfk), 
-							   lfk, r_p);
-		invkin = inverse_kinematics(a, b, q, r_p);
-		
-		auto t_loop = std::chrono::high_resolution_clock::now();
-		auto t_since_start = std::chrono::duration_cast<std::chrono::seconds>(t_loop - start_loop);
-		qd << 0.1*cos(8*std::chrono::duration<double>(t_since_start).count()), 0, 0;
-		//qd << 0.1, 0, 0;
-		e  << qd - q;
-		e << 0,0,0;
-		wd << Kp * e + Ki * eint;
-		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
-		//f_pinv = AT_pinv * we;
-		/*f0 << sgn(f_pinv(0))*f_loss(0),
-			  sgn(f_pinv(1))*f_loss(1),
-			  sgn(f_pinv(2))*f_loss(2),
-			  sgn(f_pinv(3))*f_loss(3);*/
-		fvel << 0.9*fvel + 0.1*vel;
-		Eigen::Vector4d flossdir = calculate_f_loss_dir(fvel, precv, precx, precy, prect);
-		f0 << flossdir.cwiseProduct((-1)*motor_signs);
-		f0 << f0.cwiseProduct(f_loss);
-		we << AT * f0;
-		wd << 0, 0, 0;
-		//wd << wd + we;
-		//wd << wd + AT * f_loss;
-		A_pinv = (-1*AT).transpose().completeOrthogonalDecomposition().pseudoInverse();
-		qdot << A_pinv * ldot;
-		
-		//std::cout << "we: \n" << wd << std::endl;
-		std::cout << "q: \n" << q << std::endl;
-		std::cout << "qdot: \n" << qdot << std::endl;
-		//std::cout << "vel: \n" << vel << std::endl;
-		//std::cout << "vel_m: \n" << vel_m << std::endl;
-		//std::cout << "fvel: \n" << fvel << std::endl;
-		//std::cout << "f0: \n" << f0 << std::endl;
-
-		/*std::cout << "l: \n" << l << std::endl;
-		std::cout << "lfk: \n" << lfk << std::endl;*/
-		//std::cout << "wd: \n" << wd << std::endl;
-		//std::cout << "AT: \n" << AT << std::endl;
-		
-		//f_ref = (f_min + f_max) / 2;
-		//fres.f = f_ref*Eigen::Vector4d::Ones() - AT_pinv*(wd + AT * f_ref*Eigen::Vector4d::Ones());
-		wd << 0, 0, 0;
-		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
-
-		
-		fs = calculate_fs(vel_m, e, f_static, precv, precx, precy, prect);
-		fs << 0, 0, 0, 0;
-		/*e_t << std::trunc(f_pinv(0)*pow(10, precf)) / pow(10, precf),
-			   std::trunc(f_pinv(1)*pow(10, precf)) / pow(10, precf),
-			   std::trunc(f_pinv(2)*pow(10, precf)) / pow(10, precf),
-			   std::trunc(f_pinv(3)*pow(10, precf)) / pow(10, precf);*/
-		/*f0 << sgn(f_pinv(0))*(fs(0) + f_loss(0)),
-			  sgn(f_pinv(1))*(fs(1) + f_loss(1)),
-			  sgn(f_pinv(2))*(fs(2) + f_loss(2)),
-			  sgn(f_pinv(3))*(fs(3) + f_loss(3));
-		f0 << 0, 0, 0, 0;*/
-		std::cout << "f: \n" << fres.f << std::endl;
-		T = (fres.f).cwiseProduct(r_d*(-1)*motor_signs);
-
-		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
-		
-		//std::cout << "f: \n" << fres.f << std::endl;
-
-
-		//std::cout << "f_pinv_t: \n" << f_pinv_t << std::endl;
-		//std::cout << "vel_m: \n" << vel_m << std::endl;
-		//std::cout << "f0: \n" << f0 << std::endl;
-		//std::cout << "A^T(f+f0): \n" << AT * (fres.f+f0) << std::endl;
-		//std::cout << "fs: \n" << fs << std::endl;
-		//std::cout << "T: \n" << T << std::endl;
-		
-		/*for (uint8_t i = 0; i < 4; i++) {
-			set_motor_torque(handles[i], T(i));
-		}*/
-
-		if (!fres.flag) {
-			f_prev = fres.f;
-		}
-
-		set_all_motor_torques(handles, T);
-
-		//std::cout << "f: \n" << fres.f << std::endl;
-		
-		poll_keys();
-	}
-	if (any_error) {
-		set_all_motor_torques(handles, Eigen::Vector4d::Zero());
-		std::cout << "Error encountered" << std::endl;
-		int errors[4];
-		read_all_driver_error_statuses(handles, errors);
-		std::cout << "Setting all torques to zero" << std::endl;
-	} else {
-		std::cout << "Setting standard torque" << std::endl;
-		set_all_motor_torques(handles, (0.3*Eigen::Vector4d::Ones()).cwiseProduct((-1)*motor_signs));
-	}
-	return 1;
-}
 
 int testt() {
 	auto start = std::chrono::high_resolution_clock::now();
@@ -619,18 +321,20 @@ int main()
 	motor_states.push_back(&ms2);
 	motor_states.push_back(&ms3);
 
+	double encpos[] = { 0,0,0,0 };
+
 	while (!move_on) {
 		std::cout << "Select procedure (1-8):" << std::endl;
 		std::cout << "1) Move platform with arrow keys" << std::endl;
 		std::cout << "2) Set tension" << std::endl;
 		std::cout << "3) Set home position" << std::endl;
 		std::cout << "4) Clear errors" << std::endl;
-		std::cout << "5) Run control loop" << std::endl;
+		std::cout << "5) Disable anticogging xddd" << std::endl;
 		std::cout << "6) Enable enable_dc_bus_voltage_feedback on all ODrives" << std::endl;
-		std::cout << "7) testt" << std::endl;
+		std::cout << "7) Print carth pos" << std::endl;
 		std::cout << "8) Run control loop" << std::endl;
 		std::cout << "9) Exit" << std::endl;
-		std::cout << "10) Test pos" << std::endl;
+		std::cout << "10) Zero torque" << std::endl;
 
 		std::string input;
 		std::cin >> input;
@@ -668,7 +372,8 @@ int main()
 				break;
 			case 5:
 				//com_init(handles, odrv_ports);
-				control_loop();
+				
+				set_all_encoder_positions(handles, encpos);
 				break;
 			case 6:
 				//com_init(handles, odrv_ports);
@@ -685,7 +390,8 @@ int main()
 				move_on = 1;
 				break;
 			case 10:
-				pos_test(handles);
+				set_all_motor_torques(handles, Eigen::Vector4d::Zero());
+				set_all_axis_states(handles, AXIS_STATE_IDLE);
 				break;
 			default:
 				break;
