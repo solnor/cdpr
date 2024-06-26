@@ -87,26 +87,6 @@ double friction_compensation(uint8_t odrive_number, double v) {
 Eigen::Vector4d get_positions_with_offset(const Eigen::Ref<const Eigen::Vector4d>& p_enc, 
 										  const Eigen::Ref<const Eigen::Vector4d>& p0) {
 	Eigen::Vector4d pos = Eigen::Vector4d::Zero();
-	/*pos << (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0),
-		   (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1),
-		   (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2),
-		   (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
-	/*pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
-	pos(1) = (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1);
-	pos(2) = (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2);
-	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
-	/*pos(0) = sgn(p_enc(0))*(abs(p_enc(0)) - abs(p0(0)));
-	pos(1) = sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1)));
-	pos(2) = sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2)));
-	pos(3) = sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));*/
-	//pos << sgn(p_enc(0))*(abs(p_enc(0)) - abs(p0(0))),
-	//	   sgn(p_enc(1))*(abs(p_enc(1)) - abs(p0(1))),
-	//	   sgn(p_enc(2))*(abs(p_enc(2)) - abs(p0(2))),
-	//	   sgn(p_enc(3))*(abs(p_enc(3)) - abs(p0(3)));
-	/*pos(0) = (p_enc(0) >= 0) ? p_enc(0) - p0(0) : p0(0) - p_enc(0);
-	pos(1) = (p_enc(1) >= 0) ? p_enc(1) - p0(1) : p0(1) - p_enc(1);
-	pos(2) = (p_enc(2) >= 0) ? p_enc(2) - p0(2) : p0(2) - p_enc(2);
-	pos(3) = (p_enc(3) >= 0) ? p_enc(3) - p0(3) : p0(3) - p_enc(3);*/
 	pos << p_enc(0) - p0(0),
 		   p_enc(1) - p0(1),
 		   p_enc(2) - p0(2),
@@ -122,7 +102,7 @@ int set_standard_tension(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	return 1;
 }
 
-int poll_keys2() {
+int poll_keys() {
 	if (GetAsyncKeyState('A') & 0x8000) {
 		std::cout << "Pressing A" << std::endl;
 		return 1;
@@ -147,7 +127,7 @@ int run_initial_prompts(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d
 	
 	int r = 0;
 	while (!(r == 3)) {
-		r = poll_keys2();
+		r = poll_keys();
 		if (r == 4) return 0;
 	}
 	Sleep(250);
@@ -158,7 +138,7 @@ int run_initial_prompts(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d
 	std::cout << "Set home position?" << std::endl;
 	r = 0;
 	while (!(r == 3)) {
-		r = poll_keys2();
+		r = poll_keys();
 		if (r == 4) return 0;
 	}
 	Sleep(250);
@@ -171,7 +151,7 @@ int run_initial_prompts(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d
 	std::cout << "Set home position?" << std::endl;
 	r = 0;
 	while (!(r == 3)) {
-		r = poll_keys2();
+		r = poll_keys();
 		if (r == 4) return 0;
 	}
 	Sleep(250);
@@ -188,57 +168,14 @@ int run_initial_prompts(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d
 	std::cout << "Start control loop?" << std::endl;
 	r = 0;
 	while (!(r == 3)) {
-		r = poll_keys2();
+		r = poll_keys();
 		if (r == 4) return 0;
 	}
 	Sleep(250);
 	return 1;
 }
 
-Eigen::Vector4d calculate_fs2(const Eigen::Ref<const Eigen::Vector4d>& vels,
-	const Eigen::Ref<const Eigen::Vector3d>& t,
-	const Eigen::Ref<const Eigen::MatrixXd>& AT,
-	const Eigen::Ref<const Eigen::Vector3d>& e,
-	const Eigen::Ref<const Eigen::Vector4d>& f_static,
-	double precv,
-	double precx,
-	double precy,
-	double prect,
-	double prectw) {
-	/*Eigen::Vector4d velp;
-
-	velp << std::trunc(vels(0) * pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(1) * pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(2) * pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(3) * pow(10, precv)) / pow(10, precv);*/
-	Eigen::Vector3d tp;
-	//tp << !(1 & (bool)(ceil(abs(velp(0)))))
-	tp << std::trunc(t(0) * pow(10, prectw)) / pow(10, prectw),
-		  std::trunc(t(1) * pow(10, prectw)) / pow(10, prectw),
-		  std::trunc(t(2) * pow(10, prectw)) / pow(10, prectw);
-	tp << !(1 & (bool)(ceil(abs(tp(0))))),
-		  !(1 & (bool)(ceil(abs(tp(1))))),
-		  !(1 & (bool)(ceil(abs(tp(2)))));
-	std::cout << "tp: \n" << tp << std::endl;
-	/*velp << !(1 & (bool)(ceil(abs(velp(0))))),
-		    !(1 & (bool)(ceil(abs(velp(1))))),
-		    !(1 & (bool)(ceil(abs(velp(2))))),
-		    !(1 & (bool)(ceil(abs(velp(3)))));
-	std::cout << "velp bool: \n" << velp << std::endl;*/
-	Eigen::Vector4d ldot;
-	ldot << AT.transpose()*tp;
-	ldot << (bool)abs(ldot(0)), (bool)abs(ldot(1)), (bool)abs(ldot(2)), (bool)abs(ldot(3));
-	Eigen::Vector3d ep;
-	ep << std::trunc(e(0) * pow(10, precx)) / pow(10, precx),
-		  std::trunc(e(1) * pow(10, precy)) / pow(10, precy),
-		  std::trunc(e(2) * pow(10, prect)) / pow(10, prect);
-	std::cout << "ep: \n" << ep << std::endl;
-	Eigen::Vector4d fs;
-	fs << (int)ep.any() * ldot.cwiseProduct(f_static);
-	return fs;
-}
-
-Eigen::Vector4d calculate_fs3(const Eigen::Ref<const Eigen::Vector4d>& vels,
+Eigen::Vector4d calculate_ts(const Eigen::Ref<const Eigen::Vector4d>& vels,
 							  const Eigen::Ref<const Eigen::Vector3d>& e,
 							  const Eigen::Ref<const Eigen::Vector4d>& f_static,
 							  double precv,
@@ -248,63 +185,115 @@ Eigen::Vector4d calculate_fs3(const Eigen::Ref<const Eigen::Vector4d>& vels,
 	Eigen::Vector4d velp;
 
 	velp << std::trunc(vels(0) * pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(1) * pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(2) * pow(10, precv)) / pow(10, precv),
-		std::trunc(vels(3) * pow(10, precv)) / pow(10, precv);
+		    std::trunc(vels(1) * pow(10, precv)) / pow(10, precv),
+		    std::trunc(vels(2) * pow(10, precv)) / pow(10, precv),
+		    std::trunc(vels(3) * pow(10, precv)) / pow(10, precv);
 	//std::cout << "4&1: " << (1 & (bool)4) << std::endl;
 	//std::cout << (bool)(ceil(abs(velp(1)))) << std::endl;
 	//std::cout << (1 & (bool)(ceil(abs(velp(1))))) << std::endl;
 	//std::cout << !(1 & (bool)(ceil(abs(velp(1))))) << std::endl;
 	//std::cout << "velp trunc: \n" << velp << std::endl;
 	velp << !(1 & (bool)(ceil(abs(velp(0))))),
-		!(1 & (bool)(ceil(abs(velp(1))))),
-		!(1 & (bool)(ceil(abs(velp(2))))),
-		!(1 & (bool)(ceil(abs(velp(3)))));
+		    !(1 & (bool)(ceil(abs(velp(1))))),
+		    !(1 & (bool)(ceil(abs(velp(2))))),
+		    !(1 & (bool)(ceil(abs(velp(3)))));
 	//std::cout << "velp bool: \n" << velp << std::endl;
 
 	Eigen::Vector3d ep;
 	ep << std::trunc(e(0) * pow(10, precx)) / pow(10, precx),
-		std::trunc(e(1) * pow(10, precy)) / pow(10, precy),
-		std::trunc(e(2) * pow(10, prect)) / pow(10, prect);
+		  std::trunc(e(1) * pow(10, precy)) / pow(10, precy),
+		  std::trunc(e(2) * pow(10, prect)) / pow(10, prect);
 	//std::cout << "ep: \n" << ep << std::endl;
 
-	/*Eigen::Vector4d dir(sgn(f_pinv(0)),
-						sgn(f_pinv(1)),
-						sgn(f_pinv(2)),
-						sgn(f_pinv(3)));*/
-	Eigen::Vector4d fs;
+	Eigen::Vector4d ts;
 	//fs << (int)f_pinvp.any()*velp.cwiseProduct(dir.cwiseProduct(f_static));
-	fs << (int)ep.any() * velp.cwiseProduct(f_static);
-	return fs;
+	ts << (int)ep.any() * velp.cwiseProduct(f_static);
+	return ts;
 }
 
 int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4d>& p0_in) {
 
+	// Vectors for logging data values
+	std::vector<Eigen::Vector3d> p_log, i_log, d_log;			// Proportional, integral, and derivative terms in controller
+	std::vector<Eigen::Vector3d> q_log;							// Generalized coordinates q
+	std::vector<Eigen::Vector3d> qdot_log, fqdot_log;			// Derivative of q and its filtered version
+	std::vector<Eigen::Vector3d> qd_log, qddot_log;				// Derivative of q desired and its filtered version
+	std::vector<Eigen::Vector3d> wd_log;						// Desired wrench
+	std::vector<Eigen::Vector3d> wa_log;
+	std::vector<Eigen::Vector3d> eint_log;						// Accumulated positional error
+	std::vector<Eigen::Vector3d> wint_log;						// Integral term in controller (Duplicate)
+	std::vector<Eigen::Vector4d> vel_log, fvel_log;             // Motor velocity in rev/s and its filtered version
+	std::vector<Eigen::Vector4d> vel_m_rad_log, fvel_m_rad_log; // Motor velocity in rad/s and its filtered version (with correct signs)
+	std::vector<Eigen::Vector4d> f_log;                         // Cable forces
+	std::vector<Eigen::Vector4d> t0_log;					    // Impulse torque
+	std::vector<Eigen::Vector4d> l_log;                         // Cable lengths
+	std::vector<Eigen::Vector4d> ldot_log;                      // Derivative of cable lengths
+	std::vector<Eigen::Vector4d> lfk_log;                       // Cable lengths sent to forward kinematics algorithm
+	std::vector<double> t_log;								    // Time since starting control loop
+	std::vector<double> sample_time_log;                        // Period of each control loop
+	std::vector<double> real_sample_time_log;
+
+
+
+
 	double mm2m = (double)pow(10, -3);
-	double r_d = 20*mm2m;
-	double r_p = 12*mm2m;
-	double pitch_drum = 2.9 * mm2m;
-	double ydiff = 371.4759 * mm2m;
-	double xdiff = 56.40783 * mm2m;
+	double r_d = 20*mm2m;         // Effective radius of drums
+	double r_p = 12*mm2m;         // Effective radius of pulleys
+	double pitch_drum = 2.9*mm2m; // Pitch of drums
 	
+	// Proximal anchor points
 	Eigen::MatrixXd a(2, 4);
-	/*a << -0.7560, -0.7560, 0.7560, 0.7560,
-		 -0.4181, 0.4181, 0.4181, -0.4181;*/
-	//a << -0.7490, -0.7490, 0.7530,  0.7530,
-	//     -0.4041,  0.4321, 0.4321, -0.4041;
 	a << -0.7510,   -0.7510,    0.7510,    0.7510,
          -0.4181,    0.4181,    0.4181,   -0.4181;
 
-	// Trapezoidal b
+	// Distal anchor points for trapezoidal mobile platform
 	Eigen::MatrixXd b(2, 4);
 	b << -0.0250, -0.0750, 0.0750, 0.0250,
 		 -0.0100, 0.0100, 0.0100, -0.0100;
 
+	Eigen::Vector4d lde2pe(0.359809755287430,
+						   0.363766765936637,
+						   0.361788142425923,
+						   0.361788142425923); // Length from drum exit to pulley entry
+
+	// Multipliers for getting correct signs on velocity and torque on motors
 	Eigen::Vector4d motor_signs(-1, 
 								 1,	
 		                        -1, 
 								 1);
 
+	Eigen::Vector4d p0;                                         // Starting encoder positions. Assumed to be captured when 
+																// the mobile platform is in the center with an angle of zero
+	Eigen::Vector4d pos_enc, pos;                               // Raw motor positions from encoder and processed motor positions (pos is offset from p0)
+	Eigen::Vector4d pos_rad;                                    // Motor positions in radians
+	
+	Eigen::Vector4d vel, vel_rad;                               // Motor velocities in rev/s and rad/s respectively
+	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();             // Filtered motor velocities
+	Eigen::Vector4d vel_m, vel_m_rad = Eigen::Vector4d::Zero(); // Motor velocities in rev/s and rad/s respectively (with correct signs)
+	Eigen::Vector4d fvel_m_rad       = Eigen::Vector4d::Zero(); // Filtered motor velocities with correct sign in rad/s
+
+	Eigen::Vector4d l, ldot, lfk;                               // Cable lengths, the derivative of cable lengths, 
+																// and cable lengths used by forward kinematics algorithm
+
+	// EMA filter values for states
+	Eigen::Vector3d alpha3(0.4, 0.4, 0.3);
+
+	Eigen::Vector4d l0(	1.196549826581494,
+						1.172604084137631,
+						1.173956813721921,
+						1.202012667688769); // Starting cable lengths assuming the mobile platform 
+											// is in the center with an angle of zero
+
+	// Timers
+	double t_since_start_c = 0;
+	double loop_period = 0;
+	double tdiffhalf_c = 0.0;
+	double tafterstuff_c = 0.0;
+
+
+	inv_res invkin; // Inverse kinematics result
+	
+	// Creating vector of states of each motor - i.e. position and velocity
 	motor_state ms0, ms1, ms2, ms3;
 	std::vector<motor_state*> motor_states;
 	motor_states.push_back(&ms0);
@@ -312,198 +301,86 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 	motor_states.push_back(&ms2);
 	motor_states.push_back(&ms3);
 
+	Eigen::MatrixXd AT, AT_pinv, A_pinv = Eigen::MatrixXd::Zero(3, 4); // Structure matrix, pseudo-inverse of structure matrix, 
+																	   // and pseudo inverse of the transpose of the structure matrix
+	// Force allocation parameters
+	double f_min = 10;										// Minimum cable force for force allocation
+	double f_max = 80;										// Maximum cable force for force allocation
+	double f_ref = (f_max + f_min) / 2;                     // Reference cable force for force allocation
+	Eigen::Vector4d f_prev = f_ref*Eigen::Vector4d::Ones(); // Previous cable forces
+	force_alloc_res fres;                                   // Force allocation results
 
-	std::vector<Eigen::Vector3d> p_log;
-	std::vector<Eigen::Vector3d> i_log;
-	std::vector<Eigen::Vector3d> d_log;
-	std::vector<Eigen::Vector3d> q_log;
-	std::vector<Eigen::Vector3d> qdot_log;
-	std::vector<Eigen::Vector3d> fqdot_log;
-	std::vector<Eigen::Vector3d> qd_log;
-	std::vector<Eigen::Vector3d> qddot_log;
-	std::vector<Eigen::Vector3d> wd_log;
-	std::vector<Eigen::Vector3d> wa_log;
-	std::vector<Eigen::Vector3d> eint_log;
-	std::vector<Eigen::Vector3d> wint_log;
-	std::vector<Eigen::Vector4d> vel_log;
-	std::vector<Eigen::Vector4d> fvel_log;
-	std::vector<Eigen::Vector4d> vel_m_rad_log;
-	std::vector<Eigen::Vector4d> fvel_m_rad_log;
-	std::vector<Eigen::Vector4d> f_log;
-	std::vector<Eigen::Vector4d> t0_log;
-	std::vector<Eigen::Vector4d> l_log;
-	std::vector<Eigen::Vector4d> ldot_log;
-	std::vector<Eigen::Vector4d> lfk_log;
-	std::vector<double> t_log;
-	std::vector<double> sample_time_log;
-	std::vector<double> real_sample_time_log;
-
-	Eigen::Vector4d pos_enc, pos, p0, pos_rad;
 	
-	//Eigen::Vector4d ;
-	Eigen::Vector4d vel, vel_rad;
-	Eigen::Vector4d fvel = Eigen::Vector4d::Zero();
-	Eigen::Vector4d vel_m, vel_m_rad, fvel_m_rad = Eigen::Vector4d::Zero();
-	Eigen::Vector4d l, ldot, lfk;
-	//Eigen::Vector4d l0(1.2260,
-	//				   1.1833,
-	//				   1.1833,
-	//				   1.2260);
-	//Eigen::Vector4d l0(1.2060,
-	//				   1.1820,
-	//				   1.1820,
-	//				   1.2060);
-	//Eigen::Vector4d l0(1.1962, 
-	//				   1.1723, 
-	//				   1.1736, 
-	//				   1.2017);
-	
-	//Eigen::Vector4d l0(	1.200,
-	//					1.186,
-	//					1.187,
-	//					1.217);
-
-	Eigen::Vector4d l0(	1.196549826581494,
-						1.172604084137631,
-						1.173956813721921,
-						1.202012667688769); // With updated betae
-
-	Eigen::Vector4d lde2pe(	0.359809755287430,
-							0.363766765936637,
-							0.361788142425923,
-							0.361788142425923); // With updated betae
-
-	inv_res invkin;
-
-	Eigen::MatrixXd AT, AT_pinv, A_pinv, AT_fa = Eigen::MatrixXd::Zero(3, 4);
-	//Eigen::MatrixXd  = Eigen::MatrixXd::Zero(3, 4);
-	//Eigen::MatrixXd A_pinv  = Eigen::MatrixXd::Zero(3, 4);
-
-	double f_min = 10;
-	double f_max = 80;
-	double f_ref = (f_max + f_min) / 2;
-	Eigen::Vector4d f_prev = f_ref*Eigen::Vector4d::Ones();
-	force_alloc_res fres;
-
-	//Eigen::Vector4d f_static(0.0840 / r_d,
-	//						 0.0820 / r_d,
-	//						 0.1040 / r_d,
-	//						 0.0780 / r_d);
-	//Eigen::Vector4d f_static(0.06040 / r_d,
-	//						 0.1520 / r_d,
-	//						 0.06040 / r_d,
-	//						 0.15080 / r_d);
-	//Eigen::Vector4d f_static(0.1 / r_d,
-	//						 0.05 / r_d,
-	//						 0.1 / r_d,
-	//						 0.1 / r_d);
-	//Eigen::Vector4d f_static(3.28099,
-	//						 0.862874,
-	//						 1.71798,
-	//						 1.63746);
-	//Eigen::Vector4d f_static(3.58099,
-	//						 2.0862874,
-	//						 6.7821798,
-	//						 3.52063746); // Good for wd = 1,0,0
 	Eigen::Vector4d f_static(12.58099,
 							 3.5862874,
 							 6.7821798,
 							 3.52063746);
-	//Eigen::Vector4d t_static(0.056, 0.0504, 0.0498, 0.0354);
-	//Eigen::Vector4d t_static(0.03, 0.03, 0.03, 0.03);
-	Eigen::Vector4d t_static(0.04, 0.04, 0.03, 0.03);
-		
-	Eigen::Vector4d f_loss(2.195,
-						   1.995,
-						   2.245,
-						   1.845);
-	f_loss << 1.0, 0, 0, 0.5;
-	Eigen::Vector4d f_pinv = Eigen::Vector4d::Zero();
-	Eigen::Vector3d e_t = Eigen::Vector3d::Zero();
-	Eigen::Vector4d fs = Eigen::Vector4d::Zero();
-	Eigen::Vector4d ts = Eigen::Vector4d::Zero();
-	Eigen::Vector4d f0 = Eigen::Vector4d::Zero();
-	Eigen::Vector4d t0 = Eigen::Vector4d::Zero();
+	Eigen::Vector4d t_static(0.04, 
+							 0.04,
+							 0.03,
+							 0.03);
 	double precv = 2;
 	double precx = 3;
 	double precy = 3;
 	double prect = 0;
 
-	Eigen::Vector3d q,qprev, qdot, fq = Eigen::Vector3d::Zero();
-	q << 0, 0, 0;
+	Eigen::Vector4d f_pinv = Eigen::Vector4d::Zero(); // Force allocation not taking f_min and f_max into account
+	Eigen::Vector4d ts = Eigen::Vector4d::Zero();     // Static torque required to get motors running from a standstill. Used for generating t0
+	Eigen::Vector4d t0 = Eigen::Vector4d::Zero();     // Impulse torque
+	
+
+	// Controller parameters
+	Eigen::Vector3d q, qprev, qdot, fq = Eigen::Vector3d::Zero();
+	q     << 0, 0, 0; // Generalized coordinates - q = [x, y, psi]^T
 	qprev << 0, 0, 0;
 	Eigen::Vector3d qd, qddot, fqdot = Eigen::Vector3d::Zero();
-	double omega = 2.5;
+	double omega = 3;
 	double Lx = 0.10;
 	double Ly = 0.10;
-	Eigen::Vector3d e, edot, eint = Eigen::Vector3d::Zero();
-	double dt = 15*pow(10,-3);
-	Eigen::Vector3d wd, we, wa, w0, wint = Eigen::Vector3d::Zero();
-	Eigen::Vector3d intlimit(6, 6, 0.1);
-	Eigen::Vector4d T = Eigen::Vector4d::Zero();
-	Eigen::Vector4d T_friction_model = Eigen::Vector4d::Zero();
+	Eigen::Vector3d e, edot, eint = Eigen::Vector3d::Zero();    // Errors
+	Eigen::Vector3d wd, wa = Eigen::Vector3d::Zero();			// Desired wrench, actual wrench
+	Eigen::Vector3d wint = Eigen::Vector3d::Zero();             // Wrench generated by integral term of controller
+	Eigen::Vector3d intlimit(6, 6, 0.1);                        // Saturation limits on integral term of controller
+	Eigen::Vector4d T = Eigen::Vector4d::Zero();				// Torque applied to each motor
+	Eigen::Vector4d T_friction_model = Eigen::Vector4d::Zero(); // Torque generated from friction model
+	double dt = 35*pow(10,-3);                                  // Control loop period
 
 	Eigen::Matrix3d Kp = Eigen::Matrix3d::Zero();
 	Kp(0, 0) = 225; // Proportional gain x
 	Kp(1, 1) = 125; // Proportional gain y
-	Kp(2, 2) = 5;   // Proportional gain theta
+	Kp(2, 2) = 5;   // Proportional gain psi
 
 	Eigen::Matrix3d Ki = Eigen::Matrix3d::Zero();
 	Ki(0, 0) = 425; // Integral gain x
 	Ki(1, 1) = 250; // Integral gain y
-	Ki(2, 2) = 0; // Integral gain theta
+	Ki(2, 2) = 0;   // Integral gain psi
 
 	Eigen::Matrix3d Kd = Eigen::Matrix3d::Zero();
-	Kd(0, 0) = 15;  // Derivative gain x
-	Kd(1, 1) = 21;  // Derivative gain y
-	Kd(2, 2) = 0.0;  // Derivative gain theta
-	//Eigen::Vector3d eint = Eigen::Vector3d::Zero();
-
-	// EMA filter values for states
-	Eigen::Vector3d alpha3(0.4, 0.4, 0.3);
+	Kd(0, 0) = 15;   // Derivative gain x
+	Kd(1, 1) = 21;   // Derivative gain y
+	Kd(2, 2) = 0.0;  // Derivative gain psi
 
 	int key_pressed = 0;
 
-	/*if (!(run_initial_prompts(handles, motor_signs, motor_states))) {
-		return 0;
-	}*/
 
+
+
+	std::cout << "If home position is not set, move MP to centre then enter any letter" << std::endl;
 	std::string input;
 	std::cin >> input;
 	get_all_motor_states(handles, motor_states);
 	if (p0_in.any()) {
 		p0 << p0_in;
-		std::cout << "p0_in: \n" << p0_in << std::endl;
 	} else {
+		std::cout << "Move mobile platform to center and enter any letter/number." << std::endl;
+		std::string input;
+		std::cin >> input;
 		p0 << ms0.pos,
 			  ms1.pos,
 			  ms2.pos,
 			  ms3.pos;
 	}
-	/*p0 << -0.3085,
-		  -0.0683,
-		   0.2052,
-		  -0.0371;*/
 	std::cout << "p0: \n" << p0 << std::endl;
-	
-	/*p0 << -1.25022,
-		   2.91746,
-		   1.20932,
-		  -3.03257;
-	p0 << -1.14896,
-		   3.15568,
-		   1.27374,
-		  -3.09029;
-	p0 << -1.18695,
-		   3.00702,
-		   1.2469,
-		  -3.03695;*/
-	std::cout << "p0: \n" << p0 << std::endl;
-
-	double t_since_start_c = 0;
-	double loop_period = 0;
-	double tdiffhalf_c = 0.0;
-	double tafterstuff_c = 0.0;
 
 
 	bool running = 1;
@@ -532,7 +409,7 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 			       ms3.pos;
 		pos = get_positions_with_offset(pos_enc, p0);
 		pos_rad << pos * 2 * PI;
-		//std::cout << "pos: \n" << pos << std::endl;
+
 		vel << ms0.vel,
 			   ms1.vel,
 			   ms2.vel,
@@ -541,7 +418,6 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		// EMA filter
 		double alpha = 1;
 		fvel = (1-alpha)* fvel + alpha * vel;
-
 
 		vel_rad << vel * 2 * PI;
 		vel_m << vel.cwiseProduct(motor_signs);
@@ -562,7 +438,8 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 			   l(2) - sqrt( pow(pos(2)*pitch_drum, 2) + pow(lde2pe(2), 2)),
 			   l(3) - sqrt( pow(pos(3)*pitch_drum, 2) + pow(lde2pe(3), 2));
 		//std::cout << "lfk: \n" << lfk << std::endl;
-		qprev << q;
+
+		qprev << q; // Using previous q as initial estimate of pose. Can also use fk_init_estimate().
 		q = forward_kinematics(a, b, 
 							   qprev,
 							   lfk, r_p);
@@ -571,29 +448,23 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		tdiffhalf_c = std::chrono::duration<double>(tdiffhalf).count();
 		//std::cout << "Time before forward: " << tdiffhalf_c << std::endl;
 		
-		//q << 0, 0, 0;
-		//std::cout << "q: \n" << q << std::endl;
 		std::cout << "q: " << q(0)*1000 << ", " << q(1) * 1000 << ", " << q(2)*180/PI << std::endl;
 		invkin = inverse_kinematics(a, b, q, r_p);
 
-		AT = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		//std::cout << "A^T: \n" << AT << std::endl;
-		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();
-		A_pinv = (-1*AT).transpose().completeOrthogonalDecomposition().pseudoInverse();
+		AT      = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
+		AT_pinv = AT.completeOrthogonalDecomposition().pseudoInverse();                   // Might exist better decomposition alternatives, not explored
+		A_pinv  = (-1*AT).transpose().completeOrthogonalDecomposition().pseudoInverse();  // Might exist better decomposition alternatives, not explored
+		
+		
 		qdot = A_pinv*ldot;
-		
-		
-
 		fqdot <<	alpha3(0) * qdot(0) + (1 - alpha3(0)) * fqdot(0), 
 					alpha3(1) * qdot(1) + (1 - alpha3(1)) * fqdot(1), 
 					alpha3(2) * qdot(2) + (1 - alpha3(2)) * fqdot(2);
-		
-		//wd << 0, 0, 0;
 
 		t_since_start_c = std::chrono::duration<double>(t_since_start).count();
 		std::cout << "Time since start: " << t_since_start_c << std::endl;
 		
-		// Cirle
+		// Desired trajectory generation for a circular path
 		qd << Lx*sin(omega*t_since_start_c),
 			  Ly*cos(omega*t_since_start_c)-0.2,
 			  0;
@@ -604,32 +475,24 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		// Step respones
 		//qd << 0.0, -0.05, 0.0;
 		//qddot << 0, 0, 0;
-		
-		
-		/*qd << 0.2 * cos(t_since_start_c),
-			  0.75 * sin(t_since_start_c) * cos(t_since_start_c) - 0.1,
-			  0;
-		
-		qddot << -0.2 * sin(t_since_start_c),
-				 -0.75 * cos(2*t_since_start_c),
-				  0;*/
 
-		// Infinity
-		//qd << 0.15*cos(omega*t_since_start_c + 1.57),
-		//	  0.1*sin(omega*t_since_start_c + 1.57)*cos(omega*t_since_start_c + 1.57) - 0.2,
+		// Desired trajectory generation for infinity path
+		//qd << 0.15 * sin(omega * t_since_start_c),
+		//	  0.1*cos(omega*t_since_start_c)*sin(omega*t_since_start_c) - 0.2,
 		//	  0;
+		////std::cout << "qd:\n" << qd << std::endl;
 		//
 		//qddot << -0.15*omega*sin(omega*t_since_start_c),
 		//		 -0.1*omega*cos(2*omega*t_since_start_c),
 		//		  0;
 
-		// * cos(8 * std::chrono::duration<double>(t_since_start).count())
-		//qd << 0.1, 0, 0;
+		// Controller
 		e << qd - q;
 		edot << qddot - fqdot;
 		eint += e * dt;
 		wint = Ki * eint;
 		std::cout << "wint: \n" << wint << std::endl;
+
 		// Saturation limits
 		for (uint8_t j = 0; j < 3; j++) {
 			if (wint(j) > intlimit(j)) {
@@ -639,69 +502,32 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 			}
 		}
 		std::cout << "wint: \n" << wint << std::endl;
-		/*wint(0) = wint(0) > intlimit(0) ? intlimit(0) :
-			                              abs(wint(0)) > intlimit(0) ? intlimit(0) : wint(0);
-		wint(1) = wint(1) > intlimit(1) ? intlimit(1) :
-										  abs(wint(1)) > intlimit(1) ? intlimit(1) : wint(1);
-		wint(2) = wint(2) > intlimit(2) ? intlimit(2) :
-										  abs(wint(2)) > intlimit(2) ? intlimit(2) : wint(2);*/
 		wd << Kp * e + Kd*edot + wint;
-		
-		//wd << 0.0, 0.0, 0.0;
-		//e << 1.0, 1.0, 1.0;
-		//std::cout << "vel: \n" << vel << std::endl;
-		//qdot = A_pinv * ldot;
-		//std::cout << "qdot: \n" << qdot << std::endl;
-		//fs = calculate_fs2(vel, qdot, AT, e, f_static,precv, precx, precy, prect, 2);
-		//std::cout << "fs: \n" << fs << std::endl;
+
 
 		f_pinv << AT_pinv * wd;
-		//f0 << sgn(f_pinv(0))*(f_loss(0)+fs(0)),
-		//	  sgn(f_pinv(1))*(f_loss(1)+fs(1)),
-		//	  sgn(f_pinv(2))*(f_loss(2)+fs(2)),
-		//	  sgn(f_pinv(3))*(f_loss(3)+fs(3));
-		ts = calculate_fs3(fvel, e, t_static, precv, precx, precy, prect);
-		fs << f_static;
-		f0 << sgn(f_pinv(0))*(fs(0)),
-			  sgn(f_pinv(1))*(fs(1)),
-			  sgn(f_pinv(2))*(fs(2)),
-			  sgn(f_pinv(3))*(fs(3));
+		ts = calculate_ts(fvel, e, t_static, precv, precx, precy, prect);
 		t0 << sgn(f_pinv(0))*(ts(0)),
 			  sgn(f_pinv(1))*(ts(1)),
 			  sgn(f_pinv(2))*(ts(2)),
 			  sgn(f_pinv(3))*(ts(3));
-		std::cout << "t0: \n" << t0 << std::endl;
-		//std::cout << "wd: \n" << wd << std::endl;
-		//wd << wd + AT * f0;
-		//wd << wd + Eigen::Vector3d(5, 2.2, 0);
-		//f_pinv << AT_pinv * Eigen::Vector3d(5, 2.2, 0);
-		//std::cout << "f_pinv: \n" << f_pinv << std::endl;
-		//std::cout << "f0: \n" << f0 << std::endl;
-		//std::cout << "wd: \n" << wd << std::endl;
-		//q_fa << q(1), q(2), 0;
-		/*AT_fa = calculate_structure_matrix(a, b, q, invkin.betar, r_p);
-		AT_fa(2, 0) = 0;
-		AT_fa(2, 1) = 0;
-		AT_fa(2, 2) = 0;
-		wd(2) = 0;*/
+		//std::cout << "t0: \n" << t0 << std::endl;
 		
-		
-		//fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
-		wa << AT * fres.f;
-		//fres.f = f_ref * Eigen::Vector4d::Ones() - AT_pinv * (wd + AT * f_ref * Eigen::Vector4d::Ones());
-		//std::cout << "f: \n" << fres.f << std::endl;
+		fres = force_alloc_iterative_slack(AT.transpose(), f_min, f_max, f_ref, f_prev, wd);
+		wa << AT * fres.f; // Actual wrench resulting from force allocation
 
 		// Convert tensions to torque and set the torque on each motor
 		for (int i = 0; i < 4; i++) {
 			T_friction_model(i) = friction_compensation(i, vel(i));
-
 		}
 
+		std::cout << "qd: " << qd(0) * 1000 << ", " << qd(1) * 1000 << ", " << qd(2) * 180 / PI << std::endl;
+		std::cout << "qddot: " << qddot(0) * 1000 << ", " << qddot(1) * 1000 << ", " << qddot(2) * 180 / PI << std::endl;
 
 		T = (fres.f).cwiseProduct(r_d*(-1)*motor_signs);
 		T += t0.cwiseProduct((-1)*motor_signs);
 		//T += T_friction_model;
-		//set_all_motor_torques(handles, T);
+		set_all_motor_torques(handles, T);
 
 		if (!fres.flag) {
 			f_prev = fres.f;
@@ -713,16 +539,17 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		
 
 
-		key_pressed = poll_keys2();
+		key_pressed = poll_keys();
 		if (key_pressed == 2) {
 			break;
 		}
 
+		// Ensure that each loop is not smaller than dt
 		while (1) {
 			auto t_loop_end = std::chrono::high_resolution_clock::now();
 			auto t_loop = std::chrono::duration_cast<std::chrono::milliseconds>(t_loop_end - t_loop_start);
 			loop_period = std::chrono::duration<double>(t_loop).count();
-			if (loop_period >= 0.035) break;
+			if (loop_period >= dt) break;
 		}
 
 		
@@ -732,6 +559,7 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		sample_time_log.push_back(loop_period);
 		real_sample_time_log.push_back(tafterstuff_c);
 
+		// Log data in vectors
 		p_log.push_back(Kp * e);
 		i_log.push_back(wint);
 		d_log.push_back(Kd * edot);
@@ -757,18 +585,21 @@ int tension_control_loop(HANDLE handles[], const Eigen::Ref<const Eigen::Vector4
 		
 	}
 
+	// Check whether the control loop terminated because of an error
 	if (any_error) {
+		// If an error occured, set motor torques to zero such that the mobile platform remains under control
 		set_all_motor_torques(handles, Eigen::Vector4d::Zero());
 		std::cout << "Error encountered" << std::endl;
+		std::cout << "Setting all torques to zero" << std::endl;
 		int errors[4];
 		read_all_driver_error_statuses(handles, errors);
-		std::cout << "Setting all torques to zero" << std::endl;
 	}
 	else {
 		std::cout << "Setting standard torque" << std::endl;
 		set_all_motor_torques(handles, (0.15 * Eigen::Vector4d::Ones()).cwiseProduct((-1) * motor_signs));
 	}
 	
+	// Log all data values to text files
 	std::ofstream logfile_q("logs/q.txt");
 	std::copy(q_log.begin(), q_log.end(), std::ostream_iterator<Eigen::Vector3d>(logfile_q, "\n"));
 	logfile_q.close();

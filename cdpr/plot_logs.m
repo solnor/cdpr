@@ -1,8 +1,10 @@
 
 
 %% Extract data from .txt file
+% Relative paths are not currently used, so every path needs to be changed
+% manually (TODO: Fix relative paths)
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\q.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\q.txt');
 q = [0;0;0];
 while 1
     q_tmp = [str2double(fgetl(fid));
@@ -16,7 +18,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\qdot.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\qdot.txt');
 qdot = [0;0;0];
 while 1
     qdot_tmp = [str2double(fgetl(fid));
@@ -30,7 +32,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\fqdot.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\fqdot.txt');
 fqdot = [0;0;0];
 while 1
     fqdot_tmp = [str2double(fgetl(fid));
@@ -44,7 +46,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\qddot.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\qddot.txt');
 qddot = [0;0;0];
 while 1
     qddot_tmp = [str2double(fgetl(fid));
@@ -58,7 +60,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\qd.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\qd.txt');
 qd = [0;0;0];
 while 1
     qd_tmp = [str2double(fgetl(fid));
@@ -72,7 +74,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\eint.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\eint.txt');
 eint = [0;0;0];
 while 1
     eint_tmp = [str2double(fgetl(fid));
@@ -86,7 +88,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\wint.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\wint.txt');
 wint = [0;0;0];
 while 1
     wint_tmp = [str2double(fgetl(fid));
@@ -100,7 +102,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\pw.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\pw.txt');
 pw = [0;0;0];
 while 1
     pw_tmp = [str2double(fgetl(fid));
@@ -114,7 +116,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\dw.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\dw.txt');
 dw = [0;0;0];
 while 1
     dw_tmp = [str2double(fgetl(fid));
@@ -128,7 +130,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\t.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\t.txt');
 t = 0;
 while 1
     t_tmp = str2double(fgetl(fid));
@@ -140,7 +142,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\t0.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\t0.txt');
 t0 = [0;0;0;0];
 while 1
     t0_tmp = [str2double(fgetl(fid));
@@ -155,7 +157,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\f.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\f.txt');
 f = [0;0;0;0];
 while 1
     f_tmp = [str2double(fgetl(fid));
@@ -170,7 +172,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\l.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\l.txt');
 l = [0;0;0;0];
 while 1
     l_tmp = [str2double(fgetl(fid));
@@ -185,7 +187,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\ldot.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\ldot.txt');
 ldot = [0;0;0;0];
 while 1
     ldot_tmp = [str2double(fgetl(fid));
@@ -200,7 +202,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\vel.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\vel.txt');
 vel = [0;0;0;0];
 while 1
     vel_tmp = [str2double(fgetl(fid));
@@ -215,7 +217,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\fvel.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\fvel.txt');
 fvel = [0;0;0;0];
 while 1
     fvel_tmp = [str2double(fgetl(fid));
@@ -230,7 +232,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\fvel_m_rad.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\fvel_m_rad.txt');
 fvel_m_rad = [0;0;0;0];
 while 1
     fvel_m_rad_tmp = [str2double(fgetl(fid));
@@ -245,7 +247,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\vel_m_rad.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\vel_m_rad.txt');
 vel_m_rad = [0;0;0;0];
 while 1
     vel_m_rad_tmp = [str2double(fgetl(fid));
@@ -260,7 +262,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\wd.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\wd.txt');
 wd = [0;0;0];
 while 1
     wd_tmp = [str2double(fgetl(fid));
@@ -274,7 +276,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\wa.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\wa.txt');
 wa = [0;0;0];
 while 1
     wa_tmp = [str2double(fgetl(fid));
@@ -288,7 +290,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\t_loop.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\t_loop.txt');
 t_tmp = 0;
 while 1
     t_tmp = str2double(fgetl(fid));
@@ -300,7 +302,7 @@ while 1
 end
 
 i = 1;
-fid = fopen('C:\Users\eliasoa\source\repos\cdpr2\cdpr\logs\real_t_loop.txt');
+fid = fopen('C:\Users\solvno\Documents\Master\cdpr\cdpr\logs\real_t_loop.txt');
 t_tmp = 0;
 while 1
     t_tmp = str2double(fgetl(fid));
@@ -316,11 +318,9 @@ plot(t_loop)
 hold off
 %% Save data
 % Base file path and name
-base_path = ['C:\Users\eliasoa\OneDrive - NTNU\Documents - ' ...
-    'Modellering, regulatordesign og simulering av kabeldrevet robot\General\TTK4900 ' ...
-    'Masteroppgave\Rapport\Tester og fremstillig av plots\path_following\newMP\test'];
+base_path = ['C:\Users\solvno\NTNU\Modellering, regulatordesign og simulering av kabeldrevet robot - General\TTK4900 Masteroppgave\Rapport\Tester og fremstillig av plots\path_following\newMP\test'];
 file_extension = '.mat';
-file_number = 1;  % Starting file number
+file_number = 41;  % Starting file number
 
 % Generate the initial file name
 file_name = [base_path, num2str(file_number), file_extension];

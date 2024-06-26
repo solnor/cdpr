@@ -5,6 +5,7 @@
 #include <iomanip>
 //#include <vector>
 #include <chrono>
+#include <thread>
 
 
 int find_driver_errors(HANDLE handles, odrive_state *state) {
@@ -51,7 +52,7 @@ int set_all_axis_states(HANDLE handles[], axis_states axis_state) {
 	int r = 0;
 	for (uint8_t i = 0; i < 4; i++) {
 		r = set_axis_state(handles[i], axis_state);
-		if (r = 0) {
+		if (r == 0) {
 			return 0;
 		}
 	}
@@ -77,8 +78,6 @@ int set_all_encoder_positions(HANDLE handles[], double positions[]) {
 }
 
 int get_motor_state(HANDLE handle, motor_state* state) {
-	//std::cout << handle << ", pos: " << state->pos << std::endl;
-	//std::cout << handle << ", vel: " << state->vel << std::endl;
 	char c[] = "f 0\n";
 	char r[25];
 	com_write_ln(handle, c);
@@ -86,14 +85,10 @@ int get_motor_state(HANDLE handle, motor_state* state) {
 
 	std::string rstr = r;
 
-	//std::string r = "1.234567 8.91234";
 	int index_delim = rstr.find(" ");
 
 	state->pos = std::stof(rstr.substr(0, index_delim));
 	state->vel = std::stof(rstr.substr(index_delim + 1, rstr.length() - index_delim - 1));
-
-	//std::cout << handle << ", pos: " << state->pos << std::endl;
-	//std::cout << handle << ", vel: " << state->vel << std::endl;
 
 	return 1;
 }
@@ -251,7 +246,7 @@ int clear_errors(HANDLE handles[]) {
 		for (uint8_t i = 0; i < 4; i++) {
 			if (errors[i]) {
 				clear_error(handles[i]);
-				std::cout << "Clearing errors for driver " << i << std::endl;
+				std::cout << "Clearing errors for driver " << (int)i << std::endl;
 			}
 		}
 	}
@@ -262,28 +257,30 @@ int enable_brake_resistor_voltage_feedback(HANDLE handle) {
 	int nominal_voltage = 24;
 	int ramp_start = nominal_voltage + 2;
 	int ramp_end = nominal_voltage + 6;
-	char c1[] = "w config.brake_resistor0.enable_dc_bus_voltage_feedback 1 \n";
+	char c1[] = "w config.brake_resistor0.enable_dc_bus_voltage_feedback 1\n";
+	std::cout << c1 << std::endl;
 
 	char c2[200];
 	std::string c2str = "w config.brake_resistor0.dc_bus_voltage_feedback_ramp_start " + std::to_string(ramp_start) + "\n";
 	strncpy_s(c2, sizeof(c2), c2str.c_str(), c2str.size());
-
-
+	std::cout << "c2:" << std::endl;
+	std::cout << c2 << std::endl;
+	std::cout << "End c2" << std::endl;
 	
 	char c3[200];
 	std::string c3str = "w config.brake_resistor0.dc_bus_voltage_feedback_ramp_end " + std::to_string(ramp_end) + "\n";
 	strncpy_s(c3, sizeof(c3), c3str.c_str(), c3str.size());
+	std::cout << c3 << std::endl;
 
 	int r = 0;
 	// Enable dc_bus_voltage_feedback
 	r = com_write_ln(handle, c1);
-	if (!r) return 0;
-
+	//if (!r) return 0;
 	// Apply suggested settings to dc_bus_voltage_feedback_ramp_end
 	r = com_write_ln(handle, c2);
-	if (!r) return 0;
+	//if (!r) return 0;
 	r = com_write_ln(handle, c3);
-	if (!r) return 0;
+	//if (!r) return 0;
 	return 1;
 }
 
@@ -294,6 +291,7 @@ int enable_all_brake_resistor_voltage_feedback(HANDLE handles[]) {
 		if (!r) {
 			return 0;
 		}
+		std::cout << (int)i << std::endl;
 	}
 	return 1;
 }
